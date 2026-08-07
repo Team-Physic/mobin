@@ -493,6 +493,47 @@ colcon build --symlink-install
 source /ws/install/setup.bash
 ```
 
+### 개발 shell은 언제 사용하는가
+
+개발 `shell`은 ROS 2 명령을 직접 입력하는 일회용 container다. Gazebo를 자동 실행하는 `sim`과 같은 image, source, `build/install/log` volume을 사용한다.
+
+| 상황 | 개발 `shell`에서 하는 일 | `sim`과의 관계 |
+|---|---|---|
+| 최초 실행 전 | TurtleBot3 source를 `colcon build` | build가 끝나야 `sim` 실행 가능 |
+| source 수정 후 | 변경된 package rebuild와 test | 새 build 결과를 다음 `sim`이 사용 |
+| Gazebo 실행 중 | topic, node, TF, sensor 주기 확인 | host network를 통해 실행 중인 `sim`에 연결 |
+| node 개발·debug | `ros2 run`, parameter 변경, log 확인 | 전체 simulation을 다시 만들지 않고 node만 반복 실행 |
+| GUI/GPU 문제 확인 | `rviz2`, `glxinfo -B`, `nvidia-smi` 실행 | rendering 문제를 simulation과 분리해 진단 |
+
+최초 build 또는 source 수정 후 rebuild:
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobile-robot-calibration-repo/docker
+docker compose run --rm shell bash -lc '
+  source /opt/ros/jazzy/setup.bash &&
+  colcon build --symlink-install
+'
+```
+
+build 완료 후 simulation 실행:
+
+```bash
+docker compose up sim
+```
+
+실행 중인 simulation을 조사하려면 새 terminal에서 개발 shell을 연다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobile-robot-calibration-repo/docker
+docker compose run --rm shell
+
+source /opt/ros/jazzy/setup.bash
+source /ws/install/setup.bash
+ros2 topic list
+```
+
+`--rm`은 종료한 shell container만 삭제한다. host source와 named volume의 build 결과는 유지된다. world만 실행할 때는 개발 shell 대신 `docker compose up sim`을 사용한다.
+
 ## 14. ROS topic과 TF 검증
 
 ```bash
