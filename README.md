@@ -1,6 +1,6 @@
-# Mobile Robot Camera-LiDAR Calibration Repo
+# Mobin
 
-TurtleBot3 Gazebo simulation에서 2D/3D LiDAR-Camera Extrinsic Calibration을 실습하기 위한 리포지토리
+TurtleBot3 Gazebo simulation에서 2D/3D LiDAR-Camera Extrinsic Calibration 및 DQN 강화학습을 실습해 보기 위한 리포지토리
 
 ## 디렉토리 구조
 
