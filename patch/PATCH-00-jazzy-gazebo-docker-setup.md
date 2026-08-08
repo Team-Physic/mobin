@@ -2,7 +2,7 @@
 
 ## 목적
 
-호스트에 ROS 2/Gazebo Simulator/RVIz를 직접 설치하지 않고 Docker 안에서 다음 환경을 만든다.
+호스트에 ROS 2/Gazebo Simulator/RViz를 직접 설치하지 않고 Docker 안에서 다음 환경을 만든다.
 
 - ROS 2 Jazzy Desktop
 - Gazebo Harmonic과 `ros_gz`
@@ -12,6 +12,7 @@
 - 같은 이미지로 실행되는 Gazebo `sim` 서비스와 개발용 `shell` 서비스
 - GPU가 없어도 동작하는 CPU rendering
 - 선택적인 Intel/AMD `/dev/dri` 및 NVIDIA GPU rendering
+- 기록한 Camera·LiDAR 데이터를 시간순으로 확인하는 선택적 Rerun Viewer
 - 두 upstream 리포의 commit 기록
 
 ## 최종 디렉토리 구조
@@ -378,7 +379,7 @@ docker compose up sim
 
 `waffle`, `waffle_pi`, `burger_cam`에는 camera 구성이 있어 Camera-LiDAR 실습에 적합하다. `burger`는 camera가 없으므로 calibration 실습 기본값으로 사용하지 않는다.
 
-### Gazebo GUI 및 RVIz 시각화
+### Gazebo GUI 및 RViz 시각화
 
 RViz만 실행:
 
@@ -386,7 +387,7 @@ RViz만 실행:
 GAZEBO_GUI=false LAUNCH_RVIZ=true docker compose up sim
 ```
 
-Gazebo 및 RVIz 모두 실행 :
+Gazebo 및 RViz 모두 실행:
 
 ```bash
 GAZEBO_GUI=true LAUNCH_RVIZ=true docker compose up sim
@@ -587,7 +588,90 @@ ros2 run rviz2 rviz2 -d \
   --ros-args -p use_sim_time:=true
 ```
 
-## 15. 종료와 재실행
+## 15. RVIz VS Rerun : 시간 축에서의 Data Visualization
+
+### 개념
+
+| 도구 | 쉬운 설명 | 이 프로젝트에서 맡는 역할 |
+|---|---|---|
+| RViz | 실행 중인 ROS 2 topic과 TF를 바로 구독해 보여 주는 도구 | `/scan`, `/calib/points`, Camera, TF를 실시간 점검 |
+| Rerun | 여러 sensor 기록을 **같은 시간축에서 다시 살펴보는 도구** | 기록된 Camera 영상, 3D 점, TF를 멈춤·이동·반복하며 비교 |
+| MCAP | 시간 정보와 함께 ROS 2 message를 저장하는 파일 형식 | PATCH-02에서 기록한 데이터를 Rerun으로 전달 |
+
+중요 : **Rerun은 RViz보다 무조건 나은 프로그램이 아니다.** 서로 상호 보완적인 관계이며, 따라서 둘을 함께 사용한다.
+
+| 비교 항목 | RViz | Rerun | 이 프로젝트의 선택 |
+|---|---|---|---|
+| 실행 중인 ROS 2 topic 확인 | 별도 변환 없이 바로 구독 | 공식 native ROS 2 구독 기능은 아직 없음 | 실시간 점검은 RViz |
+| 과거 시점으로 이동 | rosbag 재생을 별도로 제어 | Viewer의 시간 막대에서 바로 이동·정지·반복 | 기록 분석은 Rerun |
+| Camera·3D 점·TF 동시 확인 | 가능하지만 재생과 display를 직접 맞춰야 함 | 지원되는 MCAP message를 같은 시간축으로 자동 배치 | Calibration 입력 확인은 Rerun |
+| ROS plugin과 조작 기능 | ROS 생태계의 display, Interactive Marker, Nav2 도구가 풍부 | ROS 전용 기능은 제한적 | robot 운용·debug는 RViz |
+| 사용자 계산 결과 표시 | Marker message나 plugin 필요 | Python/C++ SDK로 residual, 검출 결과, 그래프를 함께 기록 가능 | PATCH-03 이후 결과 분석에 Rerun 확장 가능 |
+| Gazebo world 조작 | 불가 | 불가 | world 조작은 Gazebo GUI |
+
+공식 [ROS 2 연동 문서](https://rerun.io/docs/howto/integrations/ros2-nav-turtlebot)는 Rerun에 native ROS 지원이 아직 없으며 ROS message를 변환해 기록하는 node가 필요하다고 설명한다. 과거 C++ ROS 2 bridge 예제는 2026-07-27에 archive·deprecated 상태가 되었으므로 이 프로젝트의 기본 의존성으로 추가하지 않는다. 대신 공식 [MCAP importer](https://rerun.io/docs/howto/logging-and-ingestion/mcap)를 사용한다.
+
+MCAP importer는 이 실습의 핵심 message인 `sensor_msgs/Image`, `sensor_msgs/CameraInfo`, `sensor_msgs/PointCloud2`, `tf2_msgs/TFMessage`를 영상, Camera 모델, 3D 점, 좌표 변환으로 해석한다. 지원 목록은 공식 [MCAP message 형식 표](https://rerun.io/docs/concepts/logging-and-ingestion/mcap/message-formats)에서 확인한다.
+
+### 적용 범위
+
+| 단계 | 사용할 도구 | 이유 |
+|---|---|---|
+| PATCH-00~01의 simulation 실행과 sensor topic 확인 | Gazebo GUI + RViz | live ROS 2 상태를 바로 확인해야 함 |
+| PATCH-02에서 기록한 bag 품질 확인 | Rerun | Camera, point cloud, TF의 기록 시점을 함께 이동하며 확인 가능 |
+| PATCH-03~04의 calibration 결과 비교 | Rerun 확장 가능 | 초기값·추정값·ground truth와 residual을 같은 시간축에 기록 가능 |
+
+첫 적용에서는 **기록된 MCAP 열기만** 수행한다. live ROS 2 bridge, Rerun 전용 ROS node, C++ SDK 연결, 자동 layout 파일은 필요해질 때 추가한다.
+
+### Docker image에 Rerun 설치
+
+공식 Python package인 `rerun-sdk`에는 SDK와 Viewer가 함께 들어 있다. 재현 가능한 image를 위해 확인 당시 최신 버전인 `0.35.0`을 고정한다.
+
+`docker/sim/Dockerfile`에서 기존 `ARG` 아래에 다음 값을 추가한다.
+
+```dockerfile
+# docker/sim/Dockerfile | optional Rerun Viewer version
+ARG RERUN_VERSION=0.35.0
+```
+
+기존 `apt-get install` 목록에 `python3-venv`를 추가한다.
+
+```dockerfile
+# docker/sim/Dockerfile | packages required by the Rerun virtual environment
+    python3-venv \
+```
+
+기존 package 설치 `RUN` 다음에 추가한다.
+
+```dockerfile
+# docker/sim/Dockerfile | install the Rerun Viewer without changing system Python packages
+RUN python3 -m venv --system-site-packages /opt/rerun \
+ && /opt/rerun/bin/pip install --no-cache-dir "rerun-sdk==${RERUN_VERSION}"
+
+ENV PATH="/opt/rerun/bin:${PATH}"
+```
+
+ROS 2의 system Python package를 덮어쓰지 않도록 별도 virtual environment를 사용한다. MCAP을 여는 데 C++ SDK는 필요하지 않으므로 설치하지 않는다.
+
+image를 다시 만들고 CLI 설치를 확인한다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin/docker
+docker compose build
+docker compose run --rm shell rerun --version
+```
+
+출력에 `0.35.0`이 포함되어야 한다.
+
+### 제한 사항
+
+- Rerun을 실행한다고 현재 ROS 2 topic이 자동으로 표시되지는 않는다. live 연결에는 별도 변환 node가 필요하다.
+- `LaserScan`은 현재 MCAP 자동 시각화 지원 표에 없으므로 기존 2D `/scan` 확인은 RViz를 사용한다.
+- `PointCloud2`와 Camera 영상이 있다고 calibration 결과가 자동 계산되지는 않는다. Rerun은 입력과 결과를 확인하는 도구다.
+- Camera 영상 위에 보정 전후 LiDAR projection과 residual을 직접 겹치려면 PATCH-03 이후 Python 또는 C++ 코드에서 계산 결과를 Rerun SDK로 기록해야 한다.
+- 현재 단계에서는 문서와 설치 절차만 추가한다. Viewer 실행과 MCAP 표시 여부는 image rebuild 및 PATCH-02 기록 후 검증한다.
+
+## 16. 종료와 재실행
 
 | 대상 | `docker compose down` 이후 | 주의점 |
 |---|---|---|
