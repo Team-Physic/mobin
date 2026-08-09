@@ -63,8 +63,8 @@ git -C forks/direct_visual_lidar_calibration switch -c practice/calibration-expe
 
 ## TODO
 
-1. [O] [Fork clone·수정·license 준수](docs/fork_workflow_and_licensing.md)
-2. [O] [Jazzy·Gazebo Docker 환경 구성](patch/PATCH-00-jazzy-gazebo-docker-setup.md)
+1. [ ] [Fork clone·수정·license 준수](docs/fork_workflow_and_licensing.md)
+2. [ ] [Jazzy·Gazebo Docker 환경 구성](patch/PATCH-00-jazzy-gazebo-docker-setup.md)
 3. [ ] [3D LiDAR와 센서 프레임](patch/PATCH-01-add-3d-lidar.md)
 4. [ ] [Calibration 월드와 rosbag](patch/PATCH-02-calibration-scene-recording.md)
 5. [ ] [Extrinsic 계산](patch/PATCH-03-run-calibration.md)
