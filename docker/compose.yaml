@@ -1,5 +1,5 @@
 # docker/compose.yaml | x-tb3-common.environment, services.sim.command
-name: mobile-robot-calibration-repo
+name: mobin
 
 x-tb3-common: &tb3-common
   image: tb3-jazzy-lab:local
@@ -9,6 +9,7 @@ x-tb3-common: &tb3-common
       TB3_SIM_COMMIT: ${TB3_SIM_COMMIT:-unknown}
       CALIB_COMMIT: ${CALIB_COMMIT:-unknown}
   network_mode: host
+  ipc: host
   environment:
     DISPLAY: ${DISPLAY}
     QT_X11_NO_MITSHM: "1"

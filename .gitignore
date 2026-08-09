@@ -1,2 +1,4 @@
 # Independently cloned fork repositories
-forks/
+forks/*
+docs/*
+patch/*
