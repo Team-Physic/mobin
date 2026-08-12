@@ -46,7 +46,7 @@ git -C forks/direct_visual_lidar_calibration remote add upstream \
 수정 전 patch를 위한 브랜치를 생성한다
 
 ```bash
-git -C forks/turtlebot3_simulations switch -c practice/add-3d-lidar
+git -C forks/turtlebot3_simulations switch -c practice/replace-lidar-with-3d
 git -C forks/direct_visual_lidar_calibration switch -c practice/calibration-experiment
 ```
 
@@ -63,14 +63,15 @@ git -C forks/direct_visual_lidar_calibration switch -c practice/calibration-expe
 
 ## TODO
 
-1. [ ] [Jazzy·Gazebo Docker 환경 구성](patch/PATCH-00-jazzy-gazebo-docker-setup.md)
-2. [ ] [3D LiDAR와 센서 프레임](patch/PATCH-01-add-3d-lidar.md)
-3. [ ] [Calibration 월드와 rosbag](patch/PATCH-02-calibration-scene-recording.md)
-4. [ ] [Extrinsic 계산](patch/PATCH-03-run-calibration.md)
-5. [ ] [URDF 적용과 정량 검증](patch/PATCH-04-apply-and-verify.md)
-6. [ ] [정적·동적 장애물 시나리오](patch/PATCH-05-obstacle-scenarios.md)
-7. [ ] [장애물 회피 노드](patch/PATCH-06-obstacle-avoidance.md)
-8. [ ] [저조도 터널 Extrinsic 강건성 평가](patch/PATCH-07-low-light-tunnel-robustness.md)
-9. [ ] [Behavior Tree 기반 Calibration Workflow 조정](patch/PATCH-08-behavior-tree-calibration-orchestration.md)
-10. [ ] [GitHub Actions CI/CD](patch/PATCH-09-github-actions-ci-cd.md)
-11. [ ] [Sim2Real Dataset 수집과 Domain Randomization](patch/PATCH-10-sim2real-dataset-collection.md)
+1. [O] [Fork clone·수정·license 준수](docs/fork_workflow_and_licensing.md)
+2. [O] [Jazzy·Gazebo Docker 환경 구성](patch/PATCH-00-jazzy-gazebo-docker-setup.md)
+3. [ ] [기존 2D LiDAR를 3D LiDAR로 교체](patch/PATCH-01-replace-2d-lidar-with-3d-lidar.md)
+4. [ ] [Calibration 월드와 rosbag](patch/PATCH-02-calibration-scene-recording.md)
+5. [ ] [Extrinsic 계산](patch/PATCH-03-run-calibration.md)
+6. [ ] [URDF 적용과 정량 검증](patch/PATCH-04-apply-and-verify.md)
+7. [ ] [정적·동적 장애물 시나리오](patch/PATCH-05-obstacle-scenarios.md)
+8. [ ] [장애물 회피 노드](patch/PATCH-06-obstacle-avoidance.md)
+9. [ ] [저조도 터널 Extrinsic 강건성 평가](patch/PATCH-07-low-light-tunnel-robustness.md)
+10. [ ] [Behavior Tree 기반 Calibration Workflow 조정](patch/PATCH-08-behavior-tree-calibration-orchestration.md)
+11. [ ] [GitHub Actions CI/CD](patch/PATCH-09-github-actions-ci-cd.md)
+12. [ ] [Sim2Real Dataset 수집과 Domain Randomization](patch/PATCH-10-sim2real-dataset-collection.md)
