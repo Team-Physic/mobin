@@ -40,7 +40,39 @@ humanoid/
 
 Onshape를 사용하면 [onshape-to-robot](https://github.com/Rhoban/onshape-to-robot)의 export 흐름을 재사용한다. [Onshape Mates](https://cad.onshape.com/help/Content/Assembly/mates.htm)와 [Mate Connector](https://cad.onshape.com/help/Content/Assembly/assembly_mate_connector.htm)는 관절 자유도와 local axis를 정의하는 공식 참고 자료다. [Mass Properties](https://cad.onshape.com/help/Content/View/mass_properties_tool.htm)는 material density, center of mass, inertia 확인에 사용한다. 다른 CAD를 사용하면 STEP assembly를 보관하고 exporter만 바꾼다. 두 exporter를 동시에 유지하지 않는다.
 
-## 2. CAD assembly 규칙
+## 2. Raspberry Pi 5를 CAD에 먼저 삽입한다
+
+[Raspberry Pi 공식 hardware 문서](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#schematics-and-mechanical-drawings)는 Pi 5의 mechanical drawing과 STEP 파일을 제공한다. 보드 외곽을 직접 다시 그리지 않고 공식 STEP을 CAD assembly의 reference component로 삽입한다.
+
+[Pi 5 mechanical drawing](https://datasheets.raspberrypi.com/rpi5/raspberry-pi-5-mechanical-drawing.pdf)의 보드 크기는 약 `85 mm × 58 mm`다. 도면은 치수가 참고용이며 모든 부품과 제조 공차를 나타내지 않으므로 **최종 출력 전 실제 보드로 connector·높이·나사 간섭을 측정한다.**
+
+| CAD envelope | 확인할 공간 |
+|---|---|
+| PCB와 mounting hole | standoff, M2.5급 fastener, 나사 머리, 절연 간격 |
+| Active Cooler | heatsink·blower 높이, 흡기와 배기 통로, fan cable |
+| USB·Ethernet·USB-C | connector 삽입 길이와 cable 굽힘 반경 |
+| MIPI·PCIe FFC | connector 잠금 장치에 손이 닿고 ribbon이 꺾이지 않는 공간 |
+| microSD | torso를 전부 분해하지 않고 교체할 방향 |
+| GPIO·UART | MCU cable connector, strain relief, 탈착 공간 |
+| power converter | Pi용 5 V rail, fuse, motor rail과의 물리적 분리 |
+| 질량 | Pi, cooler, cable, converter를 torso mass·center of mass에 포함 |
+
+Pi 5는 `5 V / 5 A` 전원 조건을 지원하며, 지속적인 추론 부하는 thermal throttling을 만들 수 있다. [Raspberry Pi 냉각 자료](https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/)를 기준으로 첫 기체에도 Active Cooler와 airflow를 포함한다.
+
+AI HAT을 쓸 가능성이 있으면 빈 PCB 높이만 남기지 않는다. [공식 AI HAT 조립 문서](https://www.raspberrypi.com/documentation/accessories/ai-hat-plus.html)는 spacer, GPIO stacking header, PCIe ribbon, HAT 및 heatsink가 Pi 5 위에 쌓이는 구조를 보여 준다. Pi 5에는 외부용 single-lane PCIe connector 하나가 있으므로 AI HAT과 NVMe를 동시에 사용한다고 가정하지 않는다.
+
+| compute 후보 | 기계 설계 결정 |
+|---|---|
+| Raspberry Pi 5 | 첫 prototype 기본값, 공식 STEP과 실제 보드로 검증 |
+| Pi 5 + AI HAT+ | PATCH-18 vision benchmark가 필요성을 증명할 때 stack envelope 추가 |
+| Compute Module 5 | torso가 Pi 5를 수용하지 못할 때만 carrier PCB와 함께 재설계 |
+| Jetson Orin Nano | vision policy가 Pi 5 경로의 deadline을 넘을 때 power·cooling·torso를 다시 설계 |
+
+[Compute Module 5 datasheet](https://pip.raspberrypi.com/categories/944/raspberry-pi-compute-module-5/documents/RP-008180-DS/cm5-datasheet.pdf?disposition=inline)는 module 크기를 `40 mm × 55 mm`로 정의한다. 더 작지만 carrier PCB가 필요하므로 첫 prototype에는 넣지 않는다.
+
+**PATCH-18의 실제 policy benchmark가 끝나기 전 torso 내부 mounting plate를 최종 고정하지 않는다.** 첫 prototype은 Pi 5용 plate 하나만 만들고, accelerator가 필요하다는 측정 결과가 생기면 해당 board 기준으로 revision한다.
+
+## 3. CAD assembly 규칙
 
 | 규칙 | 이유 |
 |---|---|
@@ -55,7 +87,7 @@ Onshape를 사용하면 [onshape-to-robot](https://github.com/Rhoban/onshape-to-
 
 좌우 mirror 형상도 joint axis 부호와 encoder 방향을 따로 검토한다. 형상이 대칭이어도 actuator 설치 방향은 같지 않을 수 있다.
 
-## 3. Link·joint 표를 먼저 만든다
+## 4. Link·joint 표를 먼저 만든다
 
 CAD export 전에 `humanoid/description/config/kinematic_tree.yaml`에 다음 정보를 둔다.
 
@@ -73,7 +105,7 @@ CAD export 전에 `humanoid/description/config/kinematic_tree.yaml`에 다음 �
 
 이 표, CAD mate, URDF의 joint 이름·axis·limit가 자동 검사에서 일치해야 한다.
 
-## 4. Visual과 collision을 분리한다
+## 5. Visual과 collision을 분리한다
 
 | 출력 | 형상 | 목적 |
 |---|---|---|
@@ -84,7 +116,7 @@ CAD export 전에 `humanoid/description/config/kinematic_tree.yaml`에 다음 �
 
 visual mesh를 그대로 collision에 쓰는 option은 초기 확인에만 허용한다. 최종 asset은 단순 collision을 별도 저장한다.
 
-## 5. Mass와 inertia를 CAD에서 가져온다
+## 6. Mass와 inertia를 CAD에서 가져온다
 
 각 link별로 다음 표를 export한다.
 
@@ -106,7 +138,7 @@ visual mesh를 그대로 collision에 쓰는 option은 초기 확인에만 허�
 
 시제품 조립 뒤 저울과 balance test로 mass·center of mass를 다시 확인하고 CAD material을 갱신한다.
 
-## 6. URDF/Xacro를 생성한다
+## 7. URDF/Xacro를 생성한다
 
 `mobin_humanoid.urdf.xacro`에는 다음을 포함한다.
 
@@ -119,7 +151,7 @@ visual mesh를 그대로 collision에 쓰는 option은 초기 확인에만 허�
 
 generated URDF를 직접 수정하지 않는다. 변경은 CAD, export config, Xacro source 중 원인이 있는 곳에 반영한 뒤 다시 생성한다.
 
-## 7. 정적 검사
+## 8. 정적 검사
 
 ```bash
 xacro humanoid/description/urdf/mobin_humanoid.urdf.xacro \
@@ -137,7 +169,7 @@ check_urdf /tmp/mobin_humanoid.urdf
 - kinematic tree root가 하나가 아님
 - 좌우 joint 목록 또는 limit가 의도 없이 다름
 
-## 8. RViz와 운동 범위 검사
+## 9. RViz와 운동 범위 검사
 
 ```bash
 ros2 launch mobin_humanoid_description display.launch.py
@@ -155,7 +187,7 @@ RViz에서 joint state publisher slider를 최소·중립·최대로 움직인�
 
 RViz는 dynamics를 검증하지 않는다. 여기서 보인다는 이유만으로 Isaac Lab asset이 완성된 것은 아니다.
 
-## 9. 제작 도면과 revision
+## 10. 제작 도면과 revision
 
 | 산출물 | 저장 내용 |
 |---|---|
@@ -168,7 +200,7 @@ RViz는 dynamics를 검증하지 않는다. 여기서 보인다는 이유만으�
 
 직접 만든 CAD의 license는 공개 전에 명시한다. 외부 STEP·mesh는 원본 license가 허용하는 경우만 배포한다.
 
-## 10. 완료 조건
+## 11. 완료 조건
 
 - CAD rigid group·joint mate와 URDF link·joint가 1:1 대응
 - visual과 단순 collision mesh 분리
@@ -178,5 +210,8 @@ RViz는 dynamics를 검증하지 않는다. 여기서 보인다는 이유만으�
 - 실제 출력물 mass와 CAD 합계 차이 기록 및 허용 범위 결정
 - STEP, print file, drawing, BOM, assembly revision 연결
 - 출처와 license가 불명확한 mesh 없음
+- Pi 5 STEP, Active Cooler, connector cable, power converter를 포함한 torso 간섭 검사 통과
+- 실제 Pi 5로 mounting hole·connector·microSD·airflow 접근성 확인
+- PATCH-18 benchmark에서 선택한 compute board와 CAD revision 일치
 
 **PATCH-16의 URDF가 PATCH-17 hardware interface와 PATCH-18 Isaac Lab USD의 공통 기준이다.**

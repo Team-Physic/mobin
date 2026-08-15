@@ -9,6 +9,8 @@
 
 Linux가 실행되는 Raspberry Pi 5는 학습 policy와 ROS 2에는 적합하지만 motor의 전류·position loop를 항상 정확한 주기로 실행하는 안전 controller로 간주하지 않는다.
 
+Pi 5 선택은 PATCH-18의 policy benchmark를 통과한다는 조건부 결정이다. 통과하지 못하면 policy model을 줄이거나 accelerator·compute board를 바꾸며, MCU의 actuator loop와 watchdog 책임은 바뀌지 않는다.
+
 | 계층 | 담당 |
 |---|---|
 | Raspberry Pi 5 | ROS 2 node, IMU/state estimation, policy inference, rosbag, UI |
@@ -48,6 +50,8 @@ MobinHumanoidSystem::read()
 | `safety.md` | emergency stop이 실제 전력을 끊는 범위 |
 
 전원 계산은 actuator stall current를 모두 단순 합산한 값과 정상 보행 측정값을 구분한다. Pi 5 전원 rail과 motor rail을 분리하고 ground·EMI·brownout 대책을 회로 review에 포함한다.
+
+Pi 5 rail은 board, Active Cooler, camera와 PCIe accelerator를 실제 장착한 조합의 peak current로 산정한다. CPU benchmark가 빨라도 thermal throttling이나 motor 가속 시 brownout이 발생하면 통과가 아니다.
 
 ## 3. MCU protocol을 작게 유지한다
 
