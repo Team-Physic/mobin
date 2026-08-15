@@ -120,7 +120,7 @@ git -C forks/direct_visual_lidar_calibration push origin main
 
 현재 확인한 calibration 기준 commit은 README와 `package.xml`에 MIT를 선언하지만 repository root에 독립된 `LICENSE` 파일이 없다. 외부 배포 전에는 upstream이 제공한 정확한 copyright·permission notice를 확인해야 하며, 저작권자 표기를 추측해 새로 만들지 않는다.
 
-AWS warehouse ROS 2 고정 commit의 루트 `LICENSE`는 MIT-0 본문이고 `package.xml`도 `MIT-0`으로 선언한다. 모델 하위에는 별도 `LICENSE`, `COPYING`, `NOTICE`가 없고 `model.config`의 author 값은 비어 있다. MIT-0은 attribution을 조건으로 요구하지 않지만, 이 fork는 출처와 변경 이력을 추적하도록 루트 `LICENSE`와 원본 commit을 보존한다. fork의 루트 `LICENSE`와 `package.xml`을 모두 유지하고, 공개·상업 배포 전에는 별도 license 검토를 거친다. Harmonic 이식 범위와 검증 명령은 [PATCH-05](../patch/PATCH-05-obstacle-scenarios.md)에 기록한다.
+AWS warehouse ROS 2 고정 commit의 루트 `LICENSE`는 MIT-0 본문이고 `package.xml`도 `MIT-0`으로 선언한다. 모델 하위에는 별도 `LICENSE`, `COPYING`, `NOTICE`가 없고 `model.config`의 author 값은 비어 있다. MIT-0은 attribution을 조건으로 요구하지 않지만, 이 fork는 출처와 변경 이력을 추적하도록 루트 `LICENSE`와 원본 commit을 보존한다. fork의 루트 `LICENSE`와 `package.xml`을 모두 유지하고, 공개·상업 배포 전에는 별도 license 검토를 거친다. Harmonic 이식 범위와 검증 명령은 [Simulation PATCH-05](../patch/simulation/PATCH-05-obstacle-scenarios.md)에 기록한다.
 
 ### Fork 실습 checklist
 

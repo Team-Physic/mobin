@@ -1,14 +1,15 @@
 # Mobin
 
-TurtleBot3 simulation의 Camera-LiDAR calibration과 강화학습을 시작으로, Yahboom MicroROS-Pi5 실물 적용을 거쳐 자체 소형 Humanoid의 Isaac Lab Sim2Real까지 단계적으로 실습하는 리포지토리
+TurtleBot3 simulation과 실제 board·sensor·motor 실습을 병렬로 진행하고, 검증된 결과를 Yahboom MicroROS-Pi5와 자체 소형 Humanoid의 Sim2Real로 통합하는 리포지토리
 
 ## 목표
 
-| 단계 | 결과 |
+| 트랙·목표 | 결과 |
 |---|---|
 | Simulation | TurtleBot3 calibration, warehouse 회피, 재현 가능한 dataset |
-| 중간 목표 | Yahboom 실물에서 안전 회피와 RL policy 비교 |
-| 최종 목표 | 자체 CAD·Raspberry Pi 5·MCU Humanoid를 Isaac Lab에서 학습하고 실물에서 검증 |
+| Embedded mobile robot | Yahboom의 SW adapter·safety와 HW motor·sensor·watchdog 검증 |
+| Embedded humanoid | 자체 CAD·Raspberry Pi 5·MCU의 SW·HW 계층 제작 |
+| 통합 목표 | 학습 policy를 replay·shadow·guarded 순서로 실물에서 검증 |
 
 전체 순서와 단계별 통과 조건은 [PATCH 로드맵](patch/README.md)에 정리되어 있다.
 
@@ -23,6 +24,8 @@ mobile-robot-calibration-repo/
 │   ├── direct_visual_lidar_calibration/ # 내 calibration fork
 │   └── aws-robomaker-small-warehouse-world/ # 내 warehouse asset fork
 └── patch/                                # Patch 단위 구현 절차
+    ├── simulation/                       # Docker·Gazebo·학습, PATCH-00부터
+    └── embedded/                         # SW·HW 실물 실습, PATCH-00부터
 ```
 
 ## 시작하기
@@ -86,22 +89,30 @@ git -C forks/aws-robomaker-small-warehouse-world \
 ## TODO
 
 1. [O] [Fork clone·수정·license 준수](docs/how_to_fork_and_license.md)
-2. [O] [Jazzy·Gazebo Docker 환경 구성](patch/PATCH-00-jazzy-gazebo-docker-setup.md)
-3. [ ] [기존 2D LiDAR를 3D LiDAR로 교체](patch/PATCH-01-replace-2d-lidar-with-3d-lidar.md)
-4. [ ] [Calibration 월드와 rosbag](patch/PATCH-02-calibration-scene-recording.md)
-5. [ ] [Extrinsic 계산](patch/PATCH-03-run-calibration.md)
-6. [ ] [URDF 적용과 정량 검증](patch/PATCH-04-apply-and-verify.md)
-7. [ ] [AWS Warehouse를 Gazebo Harmonic으로 이식](patch/PATCH-05-obstacle-scenarios.md)
-8. [ ] [장애물 회피 노드](patch/PATCH-06-obstacle-avoidance.md)
-9. [ ] [저조도 터널 Extrinsic 강건성 평가](patch/PATCH-07-low-light-tunnel-robustness.md)
-10. [ ] [Behavior Tree 기반 Calibration Workflow 조정](patch/PATCH-08-behavior-tree-calibration-orchestration.md)
-11. [ ] [GitHub Actions CI/CD](patch/PATCH-09-github-actions-ci-cd.md)
-12. [ ] [Sim2Real Dataset 수집과 Domain Randomization](patch/PATCH-10-sim2real-dataset-collection.md)
-13. [ ] [Yahboom 실물 연결과 interface 고정](patch/PATCH-11-yahboom-hardware-bringup.md)
-14. [ ] [Yahboom 안전 장애물 회피](patch/PATCH-12-yahboom-safe-obstacle-avoidance.md)
-15. [ ] [Mobile Robot 강화학습](patch/PATCH-13-mobile-robot-reinforcement-learning.md)
-16. [ ] [Yahboom RL Sim2Real](patch/PATCH-14-yahboom-rl-sim2real.md)
-17. [ ] [공개 Humanoid와 자체 설계 요구사항](patch/PATCH-15-humanoid-reference-and-requirements.md)
-18. [ ] [자체 Humanoid CAD와 URDF](patch/PATCH-16-humanoid-cad-and-urdf.md)
-19. [ ] [Humanoid 전장과 ROS 2 제어](patch/PATCH-17-humanoid-electronics-and-control.md)
-20. [ ] [Humanoid Isaac Lab Sim2Real](patch/PATCH-18-humanoid-isaac-lab-sim2real.md)
+
+### Simulation
+
+1. [O] [PATCH-00: Jazzy·Gazebo Docker 환경](patch/simulation/PATCH-00-jazzy-gazebo-docker-setup.md)
+2. [ ] [PATCH-01: 2D LiDAR 측정을 3D LiDAR 측정으로 교체](patch/simulation/PATCH-01-replace-2d-lidar-with-3d-lidar.md)
+3. [ ] [PATCH-02: Calibration scene과 MCAP](patch/simulation/PATCH-02-calibration-scene-recording.md)
+4. [ ] [PATCH-03: Extrinsic 계산](patch/simulation/PATCH-03-run-calibration.md)
+5. [ ] [PATCH-04: URDF 반영과 정량 검증](patch/simulation/PATCH-04-apply-and-verify.md)
+6. [ ] [PATCH-05: AWS Warehouse의 Gazebo Harmonic 이식](patch/simulation/PATCH-05-obstacle-scenarios.md)
+7. [ ] [PATCH-06: 장애물 회피 node](patch/simulation/PATCH-06-obstacle-avoidance.md)
+8. [ ] [PATCH-07: 저조도 터널 calibration 강건성](patch/simulation/PATCH-07-low-light-tunnel-robustness.md)
+9. [ ] [PATCH-08: Behavior Tree calibration workflow](patch/simulation/PATCH-08-behavior-tree-calibration-orchestration.md)
+10. [ ] [PATCH-09: GitHub Actions CI/CD](patch/simulation/PATCH-09-github-actions-ci-cd.md)
+11. [ ] [PATCH-10: Sim2Real dataset과 domain randomization](patch/simulation/PATCH-10-sim2real-dataset-collection.md)
+12. [ ] [PATCH-11: Mobile Robot 강화학습](patch/simulation/PATCH-11-mobile-robot-reinforcement-learning.md)
+13. [ ] [PATCH-12: Humanoid Isaac Lab Sim2Real](patch/simulation/PATCH-12-humanoid-isaac-lab-sim2real.md)
+
+### Embedded
+
+1. [ ] [PATCH-00: Yahboom bring-up과 interface](patch/embedded/PATCH-00-yahboom-hardware-bringup.md)
+2. [ ] [PATCH-01: Yahboom 안전 장애물 회피](patch/embedded/PATCH-01-yahboom-safe-obstacle-avoidance.md)
+3. [ ] [PATCH-02: Yahboom RL Sim2Real](patch/embedded/PATCH-02-yahboom-rl-sim2real.md)
+4. [ ] [PATCH-03: Humanoid reference와 요구사항](patch/embedded/PATCH-03-humanoid-reference-and-requirements.md)
+5. [ ] [PATCH-04: Humanoid CAD와 URDF](patch/embedded/PATCH-04-humanoid-cad-and-urdf.md)
+6. [ ] [PATCH-05: Humanoid 전장과 ROS 2 제어](patch/embedded/PATCH-05-humanoid-electronics-and-control.md)
+
+두 목록은 병렬로 진행한다. 실물 command를 허용하는 통합 조건은 [PATCH 로드맵의 통합 지점](patch/README.md#통합-지점)을 따른다.
