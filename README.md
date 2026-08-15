@@ -1,6 +1,16 @@
 # Mobin
 
-TurtleBot3 Gazebo simulation에서 2D/3D LiDAR-Camera Extrinsic Calibration 및 DQN 강화학습을 실습해 보기 위한 리포지토리
+TurtleBot3 simulation의 Camera-LiDAR calibration과 강화학습을 시작으로, Yahboom MicroROS-Pi5 실물 적용을 거쳐 자체 소형 Humanoid의 Isaac Lab Sim2Real까지 단계적으로 실습하는 리포지토리
+
+## 목표
+
+| 단계 | 결과 |
+|---|---|
+| Simulation | TurtleBot3 calibration, warehouse 회피, 재현 가능한 dataset |
+| 중간 목표 | Yahboom 실물에서 안전 회피와 RL policy 비교 |
+| 최종 목표 | 자체 CAD·Raspberry Pi 5·MCU Humanoid를 Isaac Lab에서 학습하고 실물에서 검증 |
+
+전체 순서와 단계별 통과 조건은 [PATCH 로드맵](patch/README.md)에 정리되어 있다.
 
 ## 디렉토리 구조
 
@@ -87,3 +97,11 @@ git -C forks/aws-robomaker-small-warehouse-world \
 10. [ ] [Behavior Tree 기반 Calibration Workflow 조정](patch/PATCH-08-behavior-tree-calibration-orchestration.md)
 11. [ ] [GitHub Actions CI/CD](patch/PATCH-09-github-actions-ci-cd.md)
 12. [ ] [Sim2Real Dataset 수집과 Domain Randomization](patch/PATCH-10-sim2real-dataset-collection.md)
+13. [ ] [Yahboom 실물 연결과 interface 고정](patch/PATCH-11-yahboom-hardware-bringup.md)
+14. [ ] [Yahboom 안전 장애물 회피](patch/PATCH-12-yahboom-safe-obstacle-avoidance.md)
+15. [ ] [Mobile Robot 강화학습](patch/PATCH-13-mobile-robot-reinforcement-learning.md)
+16. [ ] [Yahboom RL Sim2Real](patch/PATCH-14-yahboom-rl-sim2real.md)
+17. [ ] [공개 Humanoid와 자체 설계 요구사항](patch/PATCH-15-humanoid-reference-and-requirements.md)
+18. [ ] [자체 Humanoid CAD와 URDF](patch/PATCH-16-humanoid-cad-and-urdf.md)
+19. [ ] [Humanoid 전장과 ROS 2 제어](patch/PATCH-17-humanoid-electronics-and-control.md)
+20. [ ] [Humanoid Isaac Lab Sim2Real](patch/PATCH-18-humanoid-isaac-lab-sim2real.md)
