@@ -18,12 +18,16 @@ x-tb3-common: &tb3-common
     GAZEBO_GUI: ${GAZEBO_GUI:-true}
     LAUNCH_RVIZ: ${LAUNCH_RVIZ:-false}
     GZ_IP: ${GZ_IP:-127.0.0.1}
+    X_POSE: ${X_POSE:--2.0}
+    Y_POSE: ${Y_POSE:--0.5}
+    YAW: ${YAW:-0.0}
   volumes:
     - ../forks/turtlebot3_simulations:/ws/src/turtlebot3_simulations:rw
     - tb3_build:/ws/build
     - tb3_install:/ws/install
     - tb3_log:/ws/log
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ../data:/ws/data:rw
 
 services:
   shell:
@@ -40,7 +44,7 @@ services:
         test -f /ws/install/setup.bash ||
           { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
         source /ws/install/setup.bash &&
-        ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py world:=$${TURTLEBOT3_WORLD} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+        exec ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
       "
 
 volumes:
