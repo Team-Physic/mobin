@@ -1,7 +1,7 @@
-# PATCH-16: 자체 Humanoid CAD와 URDF 제작
+# Embedded PATCH-04: 자체 Humanoid CAD와 URDF 제작
 
 - 작성일: 2026-08-15
-- 선행 조건: PATCH-15 요구사항·single-joint rig 통과
+- 선행 조건: Embedded PATCH-03 요구사항·single-joint rig 통과
 - 대상: 향후 `humanoid/cad/`, `humanoid/description/`, `humanoid/tools/`
 - 결론: **CAD assembly를 외형 그림이 아니라 link·joint·질량·충돌의 기준 원본으로 만든다. visual mesh, 단순 collision, mass·center of mass·inertia를 분리해 URDF/Xacro로 내보내고 RViz와 physics 검사까지 통과시킨다.**
 
@@ -16,6 +16,45 @@
 | inertial | mass, center of mass, inertia tensor | robot이 떨거나 넘어지고 학습 결과가 틀어짐 |
 
 [ROS 2 URDF physical property 문서](https://docs.ros.org/en/humble/Tutorials/URDF/Adding-Physical-and-Collision-Properties-to-a-URDF-Model.html)는 simulation link마다 inertial이 필요하며 zero에 가까운 inertia가 model 붕괴를 만들 수 있음을 설명한다.
+
+## Embedded
+
+CAD에서 compute board를 넣는 일은 외형 배치만이 아니다. 실제 embedded 장치는 connector 접근, cable 굽힘, 냉각 공기, 절연, service, 질량중심을 동시에 만족해야 한다.
+
+| 개념 | CAD에서 확인할 것 | CAD만으로 확인할 수 없는 것 |
+|---|---|---|
+| mechanical envelope | PCB, cooler, connector, cable, fastener가 차지하는 3D 공간 | 제조 공차와 cable 실제 강성 |
+| thermal path | 흡기·배기 공간과 heat source 위치 | 지속 부하의 실제 온도·throttling |
+| power routing | converter·fuse·motor rail의 배치와 절연거리 | noise, brownout, peak current |
+| center of mass | board·battery·cable을 포함한 torso 질량분포 | 출력물·배선의 실측 오차 |
+
+[Raspberry Pi mechanical drawing과 STEP](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#schematics-and-mechanical-drawings)을 먼저 사용하고 실제 board로 간섭을 검증한다. 열 판단은 [Raspberry Pi 5 냉각 자료](https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/)와 장시간 workload 측정을 함께 사용한다.
+
+신입은 official STEP을 assembly에 넣고 mounting plate·connector cutout·service path를 설계한다. 1~2년차는 tolerance stack, 출력 orientation, 실제 mass·temperature 결과로 revision할 수 있다. PCB high-speed layout, EMI/EMC 적합성, battery safety를 CAD clearance만으로 통과했다고 판단하지 않는다.
+
+GitHub에는 `docs/embedded/04_compute_enclosure.md`와 `docs/embedded/04_mass_thermal_report.md`를 남긴다. screenshot만 올리지 않고 board revision, CAD revision, 간섭 검사 조건, 실제 측정값을 표로 기록한다.
+
+### SW 실습
+
+| 실습 | 입력·도구 | 산출물 | 통과 조건 |
+|---|---|---|---|
+| CAD assembly | 요구사항, 공식 component STEP, joint axis | version이 고정된 assembly | rigid group·mate가 link·joint 표와 1:1 대응 |
+| robot description export | CAD mass property와 kinematic tree | URDF/Xacro, visual·collision mesh | 생성 절차가 command로 재현됨 |
+| 정적 검사 | generated URDF와 mesh | `check_urdf`·validator 결과 | mass·inertia·axis·limit·tree 검사 통과 |
+| RViz 운동 검사 | joint 최소·중립·최대값 | joint direction·TF·간섭 기록 | mesh가 joint 축에서 분리되지 않음 |
+| revision 추적 | CAD·URDF·mesh·BOM version | change log | 어느 CAD가 어느 URDF와 제작물인지 식별 가능 |
+
+### HW 실습
+
+| 실습 | 실제 부품·도구 | 측정값·산출물 | 통과 조건 |
+|---|---|---|---|
+| Pi 5 fit check | Pi 5, Active Cooler, cable, 출력 torso | hole·connector·microSD·airflow 접근 | 조립·분해와 cable 삽입 가능 |
+| 출력 공차 검사 | 3D printer, bearing, insert, fastener, 캘리퍼 | 설계 치수와 실측 치수 차이 | 끼워맞춤 기준을 revision에 반영 |
+| 관절 운동 검사 | actuator dummy 또는 실제 actuator·cable | 전 범위 간섭·굽힘·hard stop 여유 | cable·housing 접촉 전 software limit 존재 |
+| 질량·무게중심 검사 | 조립품, 저울, balance fixture | link·전체 질량과 무게중심 | CAD 오차를 material·inertial에 반영 |
+| 열 검사 | 실제 Pi 5 workload와 냉각 구성 | 온도·throttling·주변 온도 | 장시간 부하에서 정한 온도·성능 기준 충족 |
+
+**RViz와 CAD interference check는 실제 출력 공차·cable 강성·열을 검증하지 못한다. 제작물 실측 결과를 CAD와 URDF revision에 다시 반영한다.**
 
 ## 1. 계획 디렉터리
 
@@ -64,13 +103,13 @@ AI HAT을 쓸 가능성이 있으면 빈 PCB 높이만 남기지 않는다. [공
 | compute 후보 | 기계 설계 결정 |
 |---|---|
 | Raspberry Pi 5 | 첫 prototype 기본값, 공식 STEP과 실제 보드로 검증 |
-| Pi 5 + AI HAT+ | PATCH-18 vision benchmark가 필요성을 증명할 때 stack envelope 추가 |
+| Pi 5 + AI HAT+ | Simulation PATCH-12 vision benchmark가 필요성을 증명할 때 stack envelope 추가 |
 | Compute Module 5 | torso가 Pi 5를 수용하지 못할 때만 carrier PCB와 함께 재설계 |
 | Jetson Orin Nano | vision policy가 Pi 5 경로의 deadline을 넘을 때 power·cooling·torso를 다시 설계 |
 
 [Compute Module 5 datasheet](https://pip.raspberrypi.com/categories/944/raspberry-pi-compute-module-5/documents/RP-008180-DS/cm5-datasheet.pdf?disposition=inline)는 module 크기를 `40 mm × 55 mm`로 정의한다. 더 작지만 carrier PCB가 필요하므로 첫 prototype에는 넣지 않는다.
 
-**PATCH-18의 실제 policy benchmark가 끝나기 전 torso 내부 mounting plate를 최종 고정하지 않는다.** 첫 prototype은 Pi 5용 plate 하나만 만들고, accelerator가 필요하다는 측정 결과가 생기면 해당 board 기준으로 revision한다.
+**Simulation PATCH-12의 실제 policy benchmark가 끝나기 전 torso 내부 mounting plate를 최종 고정하지 않는다.** 첫 prototype은 Pi 5용 plate 하나만 만들고, accelerator가 필요하다는 측정 결과가 생기면 해당 board 기준으로 revision한다.
 
 ## 3. CAD assembly 규칙
 
@@ -147,7 +186,7 @@ visual mesh를 그대로 collision에 쓰는 option은 초기 확인에만 허�
 | link | visual, collision, inertial |
 | joint | parent, child, origin, axis, limit, dynamics |
 | frames | `base_link`, `imu_link`, foot frames, camera frame 후보 |
-| transmission/control | PATCH-17에서 사용할 joint interface 자리 |
+| transmission/control | Embedded PATCH-05에서 사용할 joint interface 자리 |
 
 generated URDF를 직접 수정하지 않는다. 변경은 CAD, export config, Xacro source 중 원인이 있는 곳에 반영한 뒤 다시 생성한다.
 
@@ -212,6 +251,6 @@ RViz는 dynamics를 검증하지 않는다. 여기서 보인다는 이유만으�
 - 출처와 license가 불명확한 mesh 없음
 - Pi 5 STEP, Active Cooler, connector cable, power converter를 포함한 torso 간섭 검사 통과
 - 실제 Pi 5로 mounting hole·connector·microSD·airflow 접근성 확인
-- PATCH-18 benchmark에서 선택한 compute board와 CAD revision 일치
+- Simulation PATCH-12 benchmark에서 선택한 compute board와 CAD revision 일치
 
-**PATCH-16의 URDF가 PATCH-17 hardware interface와 PATCH-18 Isaac Lab USD의 공통 기준이다.**
+**Embedded PATCH-04의 URDF가 Embedded PATCH-05 hardware interface와 Simulation PATCH-12 Isaac Lab USD의 공통 기준이다.**

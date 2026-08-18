@@ -1,4 +1,4 @@
-# PATCH-00: ROS 2 Jazzy + Gazebo Harmonic Docker 환경 구성
+# Simulation PATCH-00: ROS 2 Jazzy + Gazebo Harmonic Docker 환경 구성
 
 ## 목적
 
@@ -8,6 +8,7 @@
 - Gazebo Harmonic과 `ros_gz`
 - 선택 가능한 TurtleBot3 model과 world simulation
 - Gazebo GUI와 RViz의 선택 실행
+- ROS 2 sensor 기록을 시간축으로 확인하는 Rerun Viewer
 - 로컬 `forks/turtlebot3_simulations/`을 사용하는 colcon overlay
 - 같은 이미지로 실행되는 Gazebo `sim` 서비스와 개발용 `shell` 서비스
 - GPU가 없어도 동작하는 CPU rendering
@@ -30,7 +31,7 @@ mobin/
 │   ├── direct_visual_lidar_calibration/
 │   └── turtlebot3_simulations/
 └── patch/
-    └── PATCH-00-jazzy-gazebo-docker-setup.md
+    └── Simulation PATCH-00-jazzy-gazebo-docker-setup.md
 ```
 
 ## 1. 프로젝트 루트와 호스트 환경 확인
@@ -78,7 +79,7 @@ docker info | grep -i runtime || true
 ### 개념
 
 TurtleBot3에는 ROS 2 배포판별 source가 있으므로 Jazzy용 branch를 선택해야 한다. <br><br>
-두 fork의 생성과 clone은 [Fork workflow와 license 준수](../docs/how_to_fork_and_license.md)를 먼저 따른다. `status --short`는 branch 전환 전에 저장하지 않은 수정이 없는지 확인한다.
+두 fork의 생성과 clone은 [Fork workflow와 license 준수](../../docs/how_to_fork_and_license.md)를 먼저 따른다. `status --short`는 branch 전환 전에 저장하지 않은 수정이 없는지 확인한다.
 
 ROS 2 Jazzy와 맞추기 위해 simulation 리포도 공식 `jazzy` branch를 사용한다.
 
@@ -110,6 +111,7 @@ git -C forks/turtlebot3_simulations rev-parse HEAD
 | container | image를 실제로 실행한 instance | ROS 2 명령과 Gazebo가 실행되는 공간 |
 | Gazebo Harmonic | 로봇 움직임, 충돌, camera, LiDAR를 계산하는 simulator | TurtleBot3와 sensor data 생성 |
 | `ros_gz` | Gazebo data와 ROS 2 topic을 연결하는 package | simulated sensor data를 ROS 2 node에서 사용 |
+| Rerun | image와 point cloud 같은 기록 data를 같은 시간축에서 보는 Viewer | 이후 MCAP의 sensor timestamp와 공간 관계 확인 |
 | `LABEL` | image에 저장하는 metadata | 사용한 upstream commit 기록 |
 
 `LABEL`은 simulation 동작을 바꾸지 않는다.
@@ -121,10 +123,12 @@ mkdir -p docker/sim
 `docker/sim/Dockerfile`:
 
 ```dockerfile
+# docker/sim/Dockerfile | ROS 2, Gazebo, Rerun 공통 image
 FROM osrf/ros:jazzy-desktop-full
 
 ARG TB3_SIM_COMMIT=unknown
 ARG CALIB_COMMIT=unknown
+ARG RERUN_VERSION=0.35.0
 
 LABEL lab.turtlebot3_simulations.commit="${TB3_SIM_COMMIT}"
 LABEL lab.direct_visual_lidar_calibration.commit="${CALIB_COMMIT}"
@@ -135,10 +139,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-dev-tools \
     mesa-utils \
     libgl1-mesa-dri \
+    python3-venv \
+    libgtk-3-0 \
+    libxkbcommon-x11-0 \
+    libxcb-render0 \
+    libxcb-shape0 \
+    libxcb-xfixes0 \
+ && python3 -m venv /opt/rerun \
+ && /opt/rerun/bin/pip install --no-cache-dir "rerun-sdk==${RERUN_VERSION}" \
  && rosdep update \
  && rm -rf /var/lib/apt/lists/*
 
 ENV TURTLEBOT3_MODEL=waffle_pi
+ENV PATH="/opt/rerun/bin:${PATH}"
 
 WORKDIR /ws
 
@@ -154,6 +167,7 @@ CMD ["bash"]
 | `ros-jazzy-turtlebot3` | TurtleBot3 description과 의존성 | robot model과 launch 사용 |
 | `ros-dev-tools` | `colcon`, `rosdep` 등 | source build와 dependency 확인 |
 | `mesa-utils`, `libgl1-mesa-dri` | OpenGL과 software renderer | GPU가 없을 때 CPU rendering |
+| `rerun-sdk` | Rerun Python SDK와 Viewer 실행 파일 | MCAP sensor data 시각화 |
 | `TURTLEBOT3_MODEL=waffle_pi` | 기본 TurtleBot3 model 지정 | launch마다 model 입력 생략 |
 | `LABEL` | image metadata | 두 upstream commit 기록 |
 
@@ -196,7 +210,7 @@ x-tb3-common: &tb3-common
     LAUNCH_RVIZ: ${LAUNCH_RVIZ:-false}
     GZ_IP: ${GZ_IP:-127.0.0.1}
   volumes:
-    - ../forks/turtlebot3_simulations:/ws/src/turtlebot3_simulations:rw
+    - ../../forks/turtlebot3_simulations:/ws/src/turtlebot3_simulations:rw
     - tb3_build:/ws/build
     - tb3_install:/ws/install
     - tb3_log:/ws/log
@@ -289,6 +303,8 @@ docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 
 ## 7. upstream commit 설정 및 이미지 빌드
 
+`docker compose build`는 `docker/sim/Dockerfile`을 읽어 ROS 2, Gazebo, Rerun과 system package가 설치된 `tb3-jazzy-lab:local` image를 만든다. **결과물은 container의 실행 기반인 Docker image**이며, 두 commit 값은 build argument로 전달되어 image `LABEL`에 기록된다. 이 단계는 `forks/turtlebot3_simulations/`의 ROS 2 package를 compile하지 않는다.
+
 ```bash
 export TB3_SIM_COMMIT="$(git -C forks/turtlebot3_simulations rev-parse HEAD)"
 export CALIB_COMMIT="$(git -C forks/direct_visual_lidar_calibration rev-parse HEAD)"
@@ -301,6 +317,8 @@ docker compose build
 ```
 
 ## 8. colcon build
+
+`colcon build`는 앞 단계의 image로 `shell` container를 실행하고, `/ws/src/turtlebot3_simulations`의 ROS 2 source package를 compile한다. **결과물은 `/ws/build`, `/ws/install`, `/ws/log`의 workspace 산출물**이며 named volume에 저장되어 `sim` service가 사용한다. 이 단계는 Dockerfile의 package를 다시 설치하거나 Docker image를 변경하지 않는다.
 
 ```bash
 docker compose run --rm shell bash -lc '
@@ -372,6 +390,23 @@ docker compose up sim
 ```
 
 환경변수는 해당 명령으로 만든 container에만 적용된다.
+
+### Rerun은 RViz를 대체하는가
+
+| 도구 | 주 용도 | 이 프로젝트에서 확인하는 것 |
+|---|---|---|
+| RViz | 실행 중인 ROS 2 topic과 TF를 실시간 표시 | frame 연결, 현재 image와 point cloud |
+| Rerun | 저장된 data를 timeline으로 재생·비교 | Camera와 LiDAR message의 시간 순서, image와 point cloud의 대응 |
+
+둘은 대체 관계가 아니다. Rerun 설치만으로 ROS 2 topic을 자동 구독하지도 않는다. 이 PATCH에서는 Viewer를 image에 넣고 Dockerfile 변경 후 image를 다시 만들어 GUI 기동까지만 확인한다. MCAP 기록과 실제 `.mcap` 열기는 [Simulation PATCH-02](PATCH-02-calibration-scene-recording.md)에서 수행한다.
+
+```bash
+docker compose build
+docker compose run --rm shell rerun --version
+docker compose run --rm shell rerun --renderer=gl
+```
+
+마지막 명령에서 빈 Rerun Viewer 창이 표시되면 GUI 전달까지 정상이다. CPU rendering은 느릴 수 있다. 여러 sensor가 같은 timeline에 보이는 것은 timestamp가 정확히 같다는 뜻이 아니며, 차이의 크기는 기록 후 비교한다. 지원되는 ROS 2 `Image`, `CameraInfo`, `PointCloud2`와 MCAP 실행법은 [Rerun MCAP 공식 문서](https://rerun.io/docs/howto/logging-and-ingestion/mcap)를 따른다.
 
 ## 11. GPU로 실행
 

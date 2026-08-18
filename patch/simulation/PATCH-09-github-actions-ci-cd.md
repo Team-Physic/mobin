@@ -1,4 +1,4 @@
-# PATCH-09: GitHub Actions CI/CD
+# Simulation PATCH-09: GitHub Actions CI/CD
 
 - 작성일: 2026-08-07
 - 브랜치: `feature/github-actions-ci-cd`
@@ -39,7 +39,7 @@
 #### 적용 후 구조
 
 ```text
-# proposed repository layout after PATCH-09
+# proposed repository layout after Simulation PATCH-09
 mobile-robot-calibration-repo/
 ├── .github/
 │   └── workflows/
@@ -51,7 +51,7 @@ mobile-robot-calibration-repo/
 │   ├── turtlebot3_simulations/
 │   └── direct_visual_lidar_calibration/
 └── patch/
-    └── PATCH-09-github-actions-ci-cd.md
+    └── Simulation PATCH-09-github-actions-ci-cd.md
 ```
 
 #### 전체 흐름
@@ -74,10 +74,10 @@ flowchart LR
 
 | 파일 위치 | 함수 또는 설정 | 변경 요약 |
 |---|---|---|
-| `docker/compose.yaml` | [image build arguments](../docker/compose.yaml#L5) | 이전: local terminal에서 commit을 수동 전달<br>변경: CI가 checkout한 commit을 build argument로 전달<br>효과: image metadata와 source 조합 자동 확인 |
-| `docker/compose.yaml` | [TurtleBot3 bind mount](../docker/compose.yaml#L16) | 이전: local `forks/`가 있다고 가정<br>변경: workflow가 같은 경로에 fork를 별도 checkout<br>효과: 상위 repository가 source를 추적하지 않아도 build 가능 |
-| `docker/sim/Dockerfile` | [commit labels](../docker/sim/Dockerfile#L3) | 이전: 사람이 label inspect<br>변경: CI가 label과 checkout SHA를 비교<br>효과: `unknown`과 오래된 metadata를 failure 처리 |
-| `forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py` | [generate_launch_description()](../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py#L29) | 현재: Gazebo server와 GUI client를 함께 시작<br>이번 범위: build만 검증하고 GUI E2E 제외<br>효과: display 없는 runner의 불안정한 GUI 검사를 성공 조건으로 만들지 않음 |
+| `docker/compose.yaml` | [image build arguments](../../docker/compose.yaml#L5) | 이전: local terminal에서 commit을 수동 전달<br>변경: CI가 checkout한 commit을 build argument로 전달<br>효과: image metadata와 source 조합 자동 확인 |
+| `docker/compose.yaml` | [TurtleBot3 bind mount](../../docker/compose.yaml#L16) | 이전: local `forks/`가 있다고 가정<br>변경: workflow가 같은 경로에 fork를 별도 checkout<br>효과: 상위 repository가 source를 추적하지 않아도 build 가능 |
+| `docker/sim/Dockerfile` | [commit labels](../../docker/sim/Dockerfile#L3) | 이전: 사람이 label inspect<br>변경: CI가 label과 checkout SHA를 비교<br>효과: `unknown`과 오래된 metadata를 failure 처리 |
+| `forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py` | [generate_launch_description()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py#L29) | 현재: Gazebo server와 GUI client를 함께 시작<br>이번 범위: build만 검증하고 GUI E2E 제외<br>효과: display 없는 runner의 불안정한 GUI 검사를 성공 조건으로 만들지 않음 |
 
 #### Repository별 책임
 
@@ -109,7 +109,7 @@ GitHub runner는 매번 빈 환경에서 시작한다. [actions/checkout의 mult
 | calibration image build | calibration compile·link 성공 | extrinsic 결과 정확성 |
 | label comparison | metadata와 checkout commit 일치 | source가 image에 포함됨 |
 
-PATCH-04와 PATCH-06의 Python/C++ test가 실제로 추가된 뒤 `colcon test`를 성공 조건에 넣는다.
+Simulation PATCH-04와 Simulation PATCH-06의 Python/C++ test가 실제로 추가된 뒤 `colcon test`를 성공 조건에 넣는다.
 
 #### 4. hosted runner는 현재 GUI/GPU 검증 환경이 아님
 
@@ -362,8 +362,8 @@ Fork Pull Request에는 Actions secret이 전달되지 않는다. CI는 public s
 
 | 구현 단계 | 추가할 CI | 저장할 artifact |
 |---|---|---|
-| PATCH-04 Python/C++ extrinsic | transform parity와 quaternion test | `colcon test-result --verbose` |
-| PATCH-06 Python/C++ avoidance | 동일 LaserScan fixture의 command parity | test result XML |
+| Simulation PATCH-04 Python/C++ extrinsic | transform parity와 quaternion test | `colcon test-result --verbose` |
+| Simulation PATCH-06 Python/C++ avoidance | 동일 LaserScan fixture의 command parity | test result XML |
 | headless launch 지원 | timeout이 있는 Gazebo server smoke test | launch log·topic snapshot |
 | calibration fixture 확정 | 작은 bag의 regression | `calib.json`·error summary |
 

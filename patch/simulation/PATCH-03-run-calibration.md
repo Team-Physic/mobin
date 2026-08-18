@@ -1,8 +1,8 @@
-# PATCH-03: Extrinsic 계산 실행 절차
+# Simulation PATCH-03: Extrinsic 계산 실행 절차
 
 ## 이 PATCH에서 만드는 것
 
-PATCH-02에서 기록한 5개 bag을 로컬 calibration fork로 build한 Jazzy 이미지로 처리해 `T_lidar_camera`를 계산한다.
+Simulation PATCH-02에서 기록한 5개 bag을 로컬 calibration fork로 build한 Jazzy 이미지로 처리해 `T_lidar_camera`를 계산한다.
 
 ```text
 data/bags/pose-01..05
@@ -140,7 +140,7 @@ chmod +x scripts/check-calibration-bags.sh
 ./scripts/check-calibration-bags.sh
 ```
 
-이 검사는 topic과 type을 확인한다. `intensity` field는 bag metadata에 저장되지 않으므로 PATCH-01의 live 검사와 preprocess 로그에서 별도로 확인한다.
+이 검사는 topic과 type을 확인한다. `intensity` field는 bag metadata에 저장되지 않으므로 Simulation PATCH-01의 live 검사와 preprocess 로그에서 별도로 확인한다.
 
 ## 2. 단계별 실행 스크립트를 만든다
 
@@ -254,7 +254,7 @@ lidar_points[0]: <0보다 큰 정수>
 LiDAR FoV: <유한한 각도>[deg]
 ```
 
-`LiDAR FoV`는 [`estimate_lidar_fov()`](../forks/direct_visual_lidar_calibration/src/vlcal/common/estimate_fov.cpp#L53)가 PCL VoxelGrid와 ConvexHull을 실행한 결과다. 이 값이 유한하고 preprocessing이 `calib.json`, PLY, LiDAR image까지 저장하면 **현재 rosbag 경로에서 사용하는 PCL 처리가 완료된 것**이다.
+`LiDAR FoV`는 [`estimate_lidar_fov()`](../../forks/direct_visual_lidar_calibration/src/vlcal/common/estimate_fov.cpp#L53)가 PCL VoxelGrid와 ConvexHull을 실행한 결과다. 이 값이 유한하고 preprocessing이 `calib.json`, PLY, LiDAR image까지 저장하면 **현재 rosbag 경로에서 사용하는 PCL 처리가 완료된 것**이다.
 
 | runtime 결과 | 판정 |
 |---|---|
@@ -280,7 +280,7 @@ find data/results -maxdepth 1 -type f -printf '%f\n' | sort
 
 ### preprocess가 너무 많은 점을 버릴 때
 
-도구의 기본 `--min_distance`는 1.0 m다. PATCH-02 물체는 2 m 이상에 있어 기본값을 그대로 쓴다. scene을 가까이 옮겼다면 임의로 여러 옵션을 바꾸지 말고 `--min_distance 0.3`만 추가한다.
+도구의 기본 `--min_distance`는 1.0 m다. Simulation PATCH-02 물체는 2 m 이상에 있어 기본값을 그대로 쓴다. scene을 가까이 옮겼다면 임의로 여러 옵션을 바꾸지 말고 `--min_distance 0.3`만 추가한다.
 
 ## 4. manual initial guess를 만든다
 
@@ -396,7 +396,7 @@ Calibration source를 수정했다면 첫 명령에 의도한 파일만 보여�
 
 ### `failed to determine point intensity channel`
 
-PATCH-01로 돌아가 `PointCloud2.fields`를 확인한다. `--intensity_channel intensity` 이름과 field 이름이 정확히 같아야 한다.
+Simulation PATCH-01로 돌아가 `PointCloud2.fields`를 확인한다. `--intensity_channel intensity` 이름과 field 이름이 정확히 같아야 한다.
 
 ### preprocess GUI가 열리지 않는다
 
@@ -428,4 +428,4 @@ optimizer option을 바꾸기 전에 다음을 확인한다.
 - 결과를 URDF에 즉시 적용
 - 정량 ground-truth 비교
 
-transform 방향 변환과 정량 비교는 PATCH-04에서 한 번에 처리한다.
+transform 방향 변환과 정량 비교는 Simulation PATCH-04에서 한 번에 처리한다.

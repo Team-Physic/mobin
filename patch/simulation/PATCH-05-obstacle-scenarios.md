@@ -1,4 +1,4 @@
-# PATCH-05: AWS Warehouse ROS 2 branch를 Gazebo Harmonic으로 이식
+# Simulation PATCH-05: AWS Warehouse ROS 2 branch를 Gazebo Harmonic으로 이식
 
 - 작성 기준: 2026-08-14
 - 원본: [`aws-robotics/aws-robomaker-small-warehouse-world`](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world)
@@ -263,7 +263,7 @@ GZ_SIM_RESOURCE_PATH: /opt/aws_warehouse/models
 공통 volumes에 추가한다.
 
 ```yaml
-- ../forks/aws-robomaker-small-warehouse-world:/opt/aws_warehouse:ro
+- ../../forks/aws-robomaker-small-warehouse-world:/opt/aws_warehouse:ro
 ```
 
 `:ro`는 container가 source와 license를 바꾸지 못하게 한다.
@@ -399,7 +399,7 @@ ros2 topic hz /scan
 ros2 topic hz /camera/image_raw
 ```
 
-PATCH-01의 `waffle_pi_3d`를 완료했다면 `/calib/points`도 확인한다.
+Simulation PATCH-01의 `waffle_pi_3d`를 완료했다면 `/calib/points`도 확인한다.
 
 ```bash
 ros2 topic hz /calib/points
@@ -448,7 +448,7 @@ world 파일을 시나리오마다 복제하지 않는다.
 | `blind_crossing` | 선반 끝에서 cart가 횡단 | 가려졌다 나타나는 동적 물체 대응 |
 | `occlusion` | cart가 선반 뒤로 들어갔다 재등장 | Camera-LiDAR 인식·추적 연속성 |
 
-PATCH-06의 단순 `/scan` 회피는 `static_shelf` 기준선으로 유지한다.
+Simulation PATCH-06의 단순 `/scan` 회피는 `static_shelf` 기준선으로 유지한다.
 `blind_crossing`과 `occlusion`은 이후 perception·tracking 평가에 사용한다.
 
 동적 cart는 기존 `obstacle1` system을 재사용한다.
@@ -491,7 +491,7 @@ git -C forks/turtlebot3_simulations push
 | `Unable to find uri[model://...]` | model directory가 resource path에 없음 | `echo "$GZ_SIM_RESOURCE_PATH"` |
 | `invalid inertia` | Ground/Roof 수정 누락 | 두 model의 `static`과 `inertial` 확인 |
 | 모델은 보이나 통과함 | DART가 mesh collision을 만들지 못함 | Bullet load 로그와 collision 실패 로그 확인 |
-| GUI만 안 보임 | X11·DISPLAY 문제 | PATCH-00의 GUI 진단 수행 |
+| GUI만 안 보임 | X11·DISPLAY 문제 | Simulation PATCH-00의 GUI 진단 수행 |
 | Robot create가 대기함 | world server load 실패 | 가장 먼저 나온 Error Code 확인 |
 | texture만 누락됨 | DAE의 상대 texture 경로 또는 mount 누락 | model 전체 디렉터리가 유지됐는지 확인 |
 

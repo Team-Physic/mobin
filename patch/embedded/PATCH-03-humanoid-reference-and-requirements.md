@@ -1,9 +1,48 @@
-# PATCH-15: 공개 Humanoid 검증과 자체 설계 요구사항
+# Embedded PATCH-03: 공개 Humanoid 검증과 자체 설계 요구사항
 
 - 작성일: 2026-08-15
-- 선행 조건: PATCH-14 또는 mobile Sim2Real에서 얻은 interface·dataset·safety 경험
+- 시작 조건: 없음. 요구사항 초안과 reference 조사는 다른 트랙과 병렬 수행
+- 확정 조건: Embedded PATCH-02 또는 동등한 mobile Sim2Real의 interface·dataset·safety 실측
 - 대상: 향후 `humanoid/requirements/`, `humanoid/references/`
 - 결론: **Berkeley Humanoid Lite를 Isaac Lab→실물 전체 흐름의 주 참고 자료로 사용한다. CAD와 저비용 제작은 ToddlerBot·Open Duck Mini·onshape-to-robot에서 비교하되, 기존 설계의 license 조건 때문에 자체 CAD는 처음부터 별도 원본으로 만든다.**
+
+## Embedded
+
+Humanoid의 embedded architecture는 compute board 선택이 아니라 sensor 입력, policy rate, actuator loop, power, 열, 질량과 fault 책임을 계층별로 나누는 작업이다.
+
+| 개념 | 이 PATCH에서 결정할 질문 |
+|---|---|
+| compute partition | Pi 5가 실행할 ROS 2·policy와 MCU가 실행할 actuator loop의 경계 |
+| control rate | policy, state estimation, motor I/O가 각각 필요한 주기와 deadline |
+| power budget | board·sensor·actuator의 평균·peak current와 regulator 여유 |
+| hardware interface | UART, CAN, servo bus 중 필요한 bandwidth·fault detection |
+| maintainability | board, battery, cable, actuator를 분해·교체할 수 있는가 |
+
+공개 Humanoid architecture와 known issue를 읽고 component datasheet로 voltage·current·interface를 확인한 뒤 single-joint rig에서 가정을 측정한다. 신입은 reference 비교표, interface block diagram, 요구사항의 단위와 측정법을 정의한다. 1~2년차는 actuator step response·temperature·current를 측정하고 trade-off를 ADR로 결정할 수 있다. custom motor driver, battery 보호회로, safety certification은 전문가 review 없이 단독 설계하지 않는다.
+
+GitHub에는 `docs/embedded/03_system_architecture.md`, `docs/embedded/03_component_evidence.md`, `docs/embedded/adr/`를 남긴다. 각 ADR에는 선택지, 측정 근거, 선택, 포기한 조건, 재검토 기준을 쓴다.
+
+### SW 실습
+
+| 실습 | 입력·방법 | 산출물 | 통과 조건 |
+|---|---|---|---|
+| reference·license 조사 | 고정 commit의 code·CAD·asset 문서 확인 | `SOURCES.md` | component별 license와 사용 방식 분리 |
+| 요구사항 관리 | 질량·관절·전원·rate·latency에 단위와 근거 부여 | `requirements.md` | 모든 값이 measured·datasheet·CAD·assumed 중 하나 |
+| compute partition | ROS 2·policy·state estimation·motor I/O 책임 배치 | system architecture와 ADR | Pi·MCU 책임과 fault 시 safe owner가 명시됨 |
+| actuator 계산 | distal mass와 lever arm으로 정적 torque 후보 계산 | 계산표와 후보 비교 | 단위·safety factor·모델 한계 기록 |
+| interface budget | sensor·actuator message 크기와 rate 추정 | bus bandwidth·latency budget | peak traffic에도 목표 update rate의 여유 존재 |
+
+### HW 실습
+
+| 실습 | 필요한 시제품·도구 | 측정값·산출물 | 통과 조건 |
+|---|---|---|---|
+| 부품 실측 | actuator, Pi 5, battery, sensor, 저울·캘리퍼 | 질량·크기·connector 위치 | datasheet·CAD와 차이 기록 |
+| single-joint rig | actuator, 전원, 고정 지그, 부하 | step 지연·overshoot·backlash | 요구 range·속도·반복 오차 충족 |
+| 하중·열 시험 | 목표 하중, 전류·온도 측정기 | current·temperature·처짐의 시간 기록 | 정한 제한 안에서 반복 동작 |
+| fault 시험 | 통신 차단, 전원 차단, hard stop 근접 | torque-off·safe pose·mechanical 여유 | 위험한 command 유지 없음 |
+| 배선·정비성 mock-up | 실제 connector·cable·board | 굽힘·분리·교체 절차 | 관절 운동 중 간섭 없고 부품 교체 가능 |
+
+**SW 계산은 actuator 후보를 거르는 1차 근거다. 최종 선택은 single-joint rig의 전류·온도·응답 측정으로 확정한다.**
 
 ## 1. 공개 Humanoid 자료 검증
 
@@ -127,4 +166,4 @@ $$
 - CAD 시작 전에 관절 수·axis·actuator·battery 배치 review 통과
 - 출처 없는 CAD·mesh가 project tree에 없음
 
-**PATCH-15 산출물은 robot 파일이 아니라 검증 가능한 설계 요구사항이다. 이를 통과해야 PATCH-16에서 CAD를 시작한다.**
+**Embedded PATCH-03 산출물은 robot 파일이 아니라 검증 가능한 설계 요구사항이다. 이를 통과해야 Embedded PATCH-04에서 CAD를 시작한다.**

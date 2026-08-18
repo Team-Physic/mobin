@@ -1,7 +1,7 @@
-# PATCH-12: Yahboom 안전 장애물 회피 적용
+# Embedded PATCH-01: Yahboom 안전 장애물 회피 적용
 
 - 작성일: 2026-08-15
-- 선행 조건: PATCH-06 회피 node 검증, PATCH-11 실물 interface·watchdog 확인
+- 선행 조건: Simulation PATCH-06 회피 node 검증, Embedded PATCH-00 실물 interface·watchdog 확인
 - 대상: 향후 `python/`, `cpp/`, `config/yahboom/`, 실물 MicroROS-Pi5
 - 결론: **강화학습보다 먼저 결정론적 LiDAR 회피를 실물에 적용한다. 동일한 관측·명령·평가 기준을 simulation과 Yahboom에서 사용하고, safety supervisor가 모든 command를 제한한다.**
 
@@ -22,7 +22,44 @@
 operator stop ───────────→ safety supervisor → adapter → /cmd_vel
 ```
 
-## 1. PATCH-06 로직을 별도 package로 옮긴다
+## Embedded
+
+| 개념 | 쉬운 설명 | 확인 방법 |
+|---|---|---|
+| watchdog | 새 command나 sensor가 일정 시간 없으면 출력을 안전 상태로 바꾸는 감시기 | publisher를 종료하고 정지까지 걸린 시간 측정 |
+| fail-safe | 고장이 났을 때 위험이 작은 상태로 전환하는 설계 | LiDAR disconnect·NaN·process crash fault 주입 |
+| safety supervisor | controller 종류와 무관하게 마지막 속도·거리·timeout 제한을 강제 | 정상·회피·RL command에 같은 제한 적용 |
+| stopping distance | 판단 지연과 제동 중 robot이 추가로 움직이는 실제 거리 | 여러 속도에서 반복 측정하고 최댓값 기록 |
+
+학습은 [ROS 2 Jazzy topic statistics](https://docs.ros.org/en/ros2_documentation/jazzy/Tutorials/Advanced/Topic-Statistics-Tutorial/Topic-Statistics-Tutorial.html)로 message age·period를 확인하고, [ROS 2 logging](https://docs.ros.org/en/ros2_documentation/jazzy/Tutorials/Demos/Logging-and-logger-configuration.html)으로 timeout 원인과 상태 전이를 기록하는 순서로 진행한다.
+
+신입은 bounded speed, scan·command timeout, emergency stop input과 fault injection test를 설계한다. 1~2년차는 measured stopping distance와 C++/Python 공통 test vector를 만든다. **safety 인증을 주장하거나 MCU hard limit를 ROS 2 node 하나로 대체하지 않는다.**
+
+GitHub에는 `docs/embedded/01_safety_contract.md`와 `docs/embedded/01_fault_injection_report.md`를 남긴다. 각 fault마다 입력, 기대 safe state, 측정 정지시간, pass/fail, 재현 명령을 기록한다.
+
+### SW 실습
+
+| 실습 | 입력·방법 | 산출물 | 통과 조건 |
+|---|---|---|---|
+| scan sector 계산 | 정상·NaN·Inf·빈 `LaserScan` fixture | Python·C++ test 결과 | 좌·정면·우 거리와 invalid 판정 일치 |
+| controller state machine | 접근·정지·회피·복귀 순서의 고정 fixture | state transition log | 같은 입력에서 상태와 command 부호가 일치 |
+| safety supervisor | stale scan, stale command, emergency stop을 fault로 주입 | `/safety/events`와 zero command | 모든 fault가 지정된 safe state로 전이 |
+| simulation 회귀 | static·crossing·no-scan scenario | collision·minimum range·latency metric | 정한 기준을 모두 통과하고 seed·config 저장 |
+| 진단 | topic statistics와 ROS 2 log | message age·period·timeout 원인 | timeout이 단순 정지가 아니라 원인별로 식별됨 |
+
+### HW 실습
+
+| 실습 | 물리 조건 | 측정값·산출물 | 통과 조건 |
+|---|---|---|---|
+| emergency stop | 바퀴 공중, 최저 속도 | 입력부터 motor 정지까지 시간 | controller 상태와 무관하게 정지 |
+| sensor fault | LiDAR 가림·분리, agent 중단 | fault 발생부터 zero command까지 시간 | 마지막 command가 지속되지 않음 |
+| 정지 거리 | 넓은 실내에서 속도별 반복 주행 | 감지 거리, command latency, 실제 이동 거리 | `stop_distance`가 측정 최댓값보다 큼 |
+| 정적 장애물 | 큰 종이 상자와 폭이 다른 통로 | 10회 collision·minimum range·oscillation | 접촉 없이 회피하거나 안전 정지 |
+| 제한된 동적 시험 | 보조 관찰자, 즉시 중단 수단, 저속 | 횡단 물체 감지·정지 결과 | stage 1~4 통과 후에만 수행 |
+
+**SW fault test는 state machine을 검증하고, HW fault test는 실제 motor가 멈추는지를 검증한다. 둘 중 하나로 다른 하나를 대체하지 않는다.**
+
+## 1. Simulation PATCH-06 로직을 별도 package로 옮긴다
 
 TurtleBot3 upstream package 안의 회피 알고리즘을 실물에서도 쓰도록 프로젝트 package로 분리한다.
 
@@ -56,7 +93,7 @@ Python과 C++ 모두 작성하되 동작 계약은 하나다.
 |---|---|---|
 | `max_linear_velocity` | 허용 최대 선속도 | vendor 최대값이 아닌 저속 |
 | `max_angular_velocity` | 허용 최대 각속도 | 전도·미끄럼 없는 저속 |
-| `max_linear_acceleration` | command 변화율 제한 | PATCH-10 실측으로 조정 |
+| `max_linear_acceleration` | command 변화율 제한 | Simulation PATCH-10 실측으로 조정 |
 | `scan_timeout` | 최신 scan이 없으면 정지 | 실제 scan 주기의 여러 배가 되지 않게 설정 |
 | `command_timeout` | 새 controller command가 없으면 정지 | controller 주기보다 길고 위험 지속 시간보다 짧게 설정 |
 | `stop_distance` | 회피를 시작하는 거리 | 실제 정지 거리보다 크게 설정 |
@@ -71,7 +108,7 @@ Python과 C++ 모두 작성하되 동작 계약은 하나다.
 
 ## 3. simulation 회귀 검증
 
-PATCH-05 world에서 같은 config와 seed를 사용한다.
+Simulation PATCH-05 world에서 같은 config와 seed를 사용한다.
 
 | scenario | 통과 조건 |
 |---|---|
@@ -125,7 +162,7 @@ simulation과 real에서 metric 이름·단위를 같게 유지한다. 센서가
 - simulation static·crossing·timeout 회귀 시험 통과
 - 실물 바퀴 공중 시험과 정적 상자 10회 시험 결과 저장
 - scan·command timeout에서 zero command 확인
-- parameter, source commit, hardware inventory, metric을 PATCH-10 manifest에 기록
+- parameter, source commit, hardware inventory, metric을 Simulation PATCH-10 manifest에 기록
 - 충돌 0회라도 정지 거리·지연 수치를 함께 보고
 
-**이 결과가 PATCH-13 강화학습 policy의 최소 성능·안전 기준이다. RL이 이 baseline보다 나쁘면 실물 배포하지 않는다.**
+**이 결과가 Simulation PATCH-11 강화학습 policy의 최소 성능·안전 기준이다. RL이 이 baseline보다 나쁘면 실물 배포하지 않는다.**

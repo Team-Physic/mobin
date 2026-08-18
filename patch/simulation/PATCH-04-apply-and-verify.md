@@ -1,4 +1,4 @@
-# PATCH-04: Extrinsic을 URDF에 적용하고 정량 검증
+# Simulation PATCH-04: Extrinsic을 URDF에 적용하고 정량 검증
 
 ## 이 PATCH에서 만드는 것
 
@@ -18,7 +18,7 @@ p_lidar = T_lidar_camera * p_camera_optical
 
 ## 시작 조건
 
-- PATCH-03의 `data/results/calib.json`이 있다.
+- Simulation PATCH-03의 `data/results/calib.json`이 있다.
 - `results.T_lidar_camera`가 `[x, y, z, qx, qy, qz, qw]` 7개 값이다.
 - 아직 추정 결과로 URDF를 수정하지 않았다.
 
@@ -27,7 +27,7 @@ cd /home/swlinux/Desktop/workspace/mobin
 git diff -- forks/turtlebot3_simulations/turtlebot3_gazebo/urdf/turtlebot3_waffle_pi_3d.urdf
 ```
 
-PATCH-01에서 추가한 `calib_lidar_joint` 외에 camera pose가 바뀌어 있다면 먼저 그 이유를 확인한다.
+Simulation PATCH-01에서 추가한 `calib_lidar_joint` 외에 camera pose가 바뀌어 있다면 먼저 그 이유를 확인한다.
 
 ## 추가/수정할 파일
 
@@ -45,7 +45,7 @@ Gazebo 실제 센서 pose가 있는 `model.sdf`는 이 PATCH에서 수정하지 
 
 ## 1. ground truth를 기록한다
 
-PATCH-01 기준 pose를 그대로 썼다면 알려진 transform은 다음과 같다.
+Simulation PATCH-01 기준 pose를 그대로 썼다면 알려진 transform은 다음과 같다.
 
 ```text
 T_base_lidar:
@@ -69,7 +69,7 @@ simulation을 원래 URDF로 실행하고 TF에서도 확인한다.
 ros2 run tf2_ros tf2_echo base_scan camera_rgb_optical_frame
 ```
 
-PATCH-01의 기준값이면 translation은 대략 `[0.076, 0.000, -0.087]`이다. rotation은 TF 출력의 quaternion을 그대로 복사한다.
+Simulation PATCH-01의 기준값이면 translation은 대략 `[0.076, 0.000, -0.087]`이다. rotation은 TF 출력의 quaternion을 그대로 복사한다.
 
 `data/results/ground-truth.json`을 만든다.
 
@@ -97,7 +97,7 @@ PATCH-01의 기준값이면 translation은 대략 `[0.076, 0.000, -0.087]`이다
 }
 ```
 
-SDF/URDF pose를 PATCH-01의 예시와 다르게 정했다면 위 숫자를 그대로 쓰지 않는다. `tf2_echo`와 실제 URDF chain에서 다시 기록한다.
+SDF/URDF pose를 Simulation PATCH-01의 예시와 다르게 정했다면 위 숫자를 그대로 쓰지 않는다. `tf2_echo`와 실제 URDF chain에서 다시 기록한다.
 
 ## 2. 비교와 변환을 한 스크립트에 둔다
 
@@ -381,9 +381,9 @@ camera optical frame을 사용했는지 확인한다. `camera_rgb_frame`과 `cam
 
 URDF를 수정하지 말고 다음 순서로 돌아간다.
 
-1. PATCH-01 frame ID와 intensity field
-2. PATCH-02 공통 시야, 반사도 변화, bag 정지 상태
-3. PATCH-03 manual correspondence와 viewer projection
+1. Simulation PATCH-01 frame ID와 intensity field
+2. Simulation PATCH-02 공통 시야, 반사도 변화, bag 정지 상태
+3. Simulation PATCH-03 manual correspondence와 viewer projection
 4. `ground-truth.json`을 현재 SDF/URDF pose에서 만들었는지
 
 ## 이 PATCH에서 하지 않는 것

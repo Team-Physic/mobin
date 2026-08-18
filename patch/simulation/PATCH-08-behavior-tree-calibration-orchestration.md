@@ -1,4 +1,4 @@
-# PATCH-08: Behavior Tree 기반 Calibration Workflow 조정
+# Simulation PATCH-08: Behavior Tree 기반 Calibration Workflow 조정
 
 - 작성일: 2026-08-06
 - 브랜치: `main`
@@ -8,7 +8,7 @@
 
 ### Why?
 
-현재 상위 리포에는 실행 가능한 calibration orchestrator가 없다. PATCH-02는 5개 pose마다 simulation을 다시 실행하고, 센서가 안정되기를 기다린 뒤, 작업자가 `ros2 bag record`를 시작·종료하는 절차를 정의한다. PATCH-03의 `check-calibration-bags.sh`와 `run-calibration.sh`, PATCH-04의 `extrinsic_math.py`도 아직 실제 파일이 아니라 보고서 안의 구현 계획이다.
+현재 상위 리포에는 실행 가능한 calibration orchestrator가 없다. Simulation PATCH-02는 5개 pose마다 simulation을 다시 실행하고, 센서가 안정되기를 기다린 뒤, 작업자가 `ros2 bag record`를 시작·종료하는 절차를 정의한다. Simulation PATCH-03의 `check-calibration-bags.sh`와 `run-calibration.sh`, Simulation PATCH-04의 `extrinsic_math.py`도 아직 실제 파일이 아니라 보고서 안의 구현 계획이다.
 
 이 흐름에서는 pose 하나의 센서가 끊기거나 bag이 불완전해도 실패가 전체 절차 중 어느 단계에서 발생했는지 기계적으로 남지 않는다. 작업자가 실패 pose와 재시작 지점을 직접 판단해야 하며, 이미 정상적으로 수집한 pose까지 다시 수행할 가능성이 있다.
 
@@ -26,7 +26,7 @@
 
 ### What I Made
 
-이 PATCH는 구현 코드가 아니라 다음 구현 단계에서 사용할 Behavior Tree 적용 경계와 완료 조건을 정의한다. 먼저 PATCH-00부터 PATCH-04의 실제 실행 파일을 만든 뒤 이 설계를 적용한다.
+이 PATCH는 구현 코드가 아니라 다음 구현 단계에서 사용할 Behavior Tree 적용 경계와 완료 조건을 정의한다. 먼저 Simulation PATCH-00부터 Simulation PATCH-04의 실제 실행 파일을 만든 뒤 이 설계를 적용한다.
 
 #### 적용할 전체 흐름
 
@@ -73,12 +73,12 @@ flowchart TD
 
 | 파일 위치 | 함수 | 역할 |
 |---|---|---|
-| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::run()](../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L37) | 입력: calibration bag 디렉터리와 camera·LiDAR topic 설정<br>처리: bag별 image와 point cloud를 전처리하고 LiDAR image 생성<br>결과: PNG, PLY, `calib.json` 저장; BT에서는 하나의 장시간 Action으로 감쌈 |
-| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::get_image_and_points()](../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L406) | 입력: bag, image topic, point topic, intensity channel<br>처리: image 하나를 읽고 bag의 point cloud frame을 static 또는 dynamic 방식으로 누적<br>결과: image와 통합 cloud 반환; BT가 호출 전에 정적 수집 조건을 보장해야 함 |
-| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/static_point_cloud_integrator.cpp` | [StaticPointCloudIntegrator::insert_points()](../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/static_point_cloud_integrator.cpp#L25) | 입력: 한 LiDAR frame의 point와 intensity<br>처리: 최소거리 미만 point를 버리고 voxel별 마지막 point를 저장<br>결과: 정적 장면의 누적 cloud 구성; 로봇 이동 여부는 검사하지 않음 |
-| `forks/direct_visual_lidar_calibration/src/calibrate.cpp` | [VisualLiDARCalibration::calibrate()](../forks/direct_visual_lidar_calibration/src/calibrate.cpp#L55) | 입력: `calib.json`의 manual 또는 automatic initial guess<br>처리: NID 기반 registration을 별도 thread에서 최적화<br>결과: `results.T_lidar_camera` 저장; BT는 종료 코드와 결과 구조만 판정 |
-| `forks/direct_visual_lidar_calibration/src/viewer.cpp` | [Viewer::ui_callback()](../forks/direct_visual_lidar_calibration/src/viewer.cpp#L101) | 입력: 저장된 initial·final transformation 목록<br>처리: 작업자가 비교할 transformation을 GUI에서 선택<br>결과: image–point projection 정성 확인; 자동 성공 조건으로 사용하지 않음 |
-| `forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp` | [Turtlebot3Drive::update_callback()](../forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp#L110) | 입력: 최신 LaserScan 거리와 odometry yaw<br>처리: hard-coded FSM으로 전진 또는 좌·우 회전 명령 선택<br>결과: 저수준 반응형 속도 명령; 이 제어 loop 자체는 BT로 교체하지 않음 |
+| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::run()](../../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L37) | 입력: calibration bag 디렉터리와 camera·LiDAR topic 설정<br>처리: bag별 image와 point cloud를 전처리하고 LiDAR image 생성<br>결과: PNG, PLY, `calib.json` 저장; BT에서는 하나의 장시간 Action으로 감쌈 |
+| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::get_image_and_points()](../../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L406) | 입력: bag, image topic, point topic, intensity channel<br>처리: image 하나를 읽고 bag의 point cloud frame을 static 또는 dynamic 방식으로 누적<br>결과: image와 통합 cloud 반환; BT가 호출 전에 정적 수집 조건을 보장해야 함 |
+| `forks/direct_visual_lidar_calibration/src/vlcal/preprocess/static_point_cloud_integrator.cpp` | [StaticPointCloudIntegrator::insert_points()](../../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/static_point_cloud_integrator.cpp#L25) | 입력: 한 LiDAR frame의 point와 intensity<br>처리: 최소거리 미만 point를 버리고 voxel별 마지막 point를 저장<br>결과: 정적 장면의 누적 cloud 구성; 로봇 이동 여부는 검사하지 않음 |
+| `forks/direct_visual_lidar_calibration/src/calibrate.cpp` | [VisualLiDARCalibration::calibrate()](../../forks/direct_visual_lidar_calibration/src/calibrate.cpp#L55) | 입력: `calib.json`의 manual 또는 automatic initial guess<br>처리: NID 기반 registration을 별도 thread에서 최적화<br>결과: `results.T_lidar_camera` 저장; BT는 종료 코드와 결과 구조만 판정 |
+| `forks/direct_visual_lidar_calibration/src/viewer.cpp` | [Viewer::ui_callback()](../../forks/direct_visual_lidar_calibration/src/viewer.cpp#L101) | 입력: 저장된 initial·final transformation 목록<br>처리: 작업자가 비교할 transformation을 GUI에서 선택<br>결과: image–point projection 정성 확인; 자동 성공 조건으로 사용하지 않음 |
+| `forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp` | [Turtlebot3Drive::update_callback()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp#L110) | 입력: 최신 LaserScan 거리와 odometry yaw<br>처리: hard-coded FSM으로 전진 또는 좌·우 회전 명령 선택<br>결과: 저수준 반응형 속도 명령; 이 제어 loop 자체는 BT로 교체하지 않음 |
 
 #### 정지 판정
 
@@ -106,7 +106,7 @@ $t_{image}$와 $t_{lidar,j}$는 같은 ROS clock domain의 초 단위 `header.st
 
 #### 결과 검증과 URDF 적용 gate
 
-PATCH-04가 정의한 simulation 기준을 그대로 BT의 최종 condition으로 재사용한다.
+Simulation PATCH-04가 정의한 simulation 기준을 그대로 BT의 최종 condition으로 재사용한다.
 
 $$
 e_t = \|\mathbf{t}_{est} - \mathbf{t}_{gt}\|_2
@@ -137,7 +137,7 @@ Gazebo와 RViz는 robot·sensor·TF를 보여주고, `direct_visual_lidar_calibr
 
 #### 2. 전처리는 robot stationarity를 확인하지 않음
 
-`forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::get_image_and_points()](../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L406)는 image를 얻은 뒤 모든 point cloud frame을 누적하지만 `/odom`이나 TF로 로봇 정지를 검사하지 않는다. 정지 보장은 현재 작업 절차에만 존재한다.
+`forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp` | [Preprocess::get_image_and_points()](../../forks/direct_visual_lidar_calibration/src/vlcal/preprocess/preprocess.cpp#L406)는 image를 얻은 뒤 모든 point cloud frame을 누적하지만 `/odom`이나 TF로 로봇 정지를 검사하지 않는다. 정지 보장은 현재 작업 절차에만 존재한다.
 
 #### 3. bag metadata 검사만으로 관측 품질을 증명할 수 없음
 
@@ -145,7 +145,7 @@ topic과 message count가 존재해도 image가 어둡거나, LiDAR intensity �
 
 #### 4. manual initial guess는 자동 Action이 아님
 
-`forks/direct_visual_lidar_calibration/src/initial_guess_manual.cpp` | [main()](../forks/direct_visual_lidar_calibration/src/initial_guess_manual.cpp#L306)은 GUI 입력을 요구한다. BT가 이 단계를 성공으로 가장하면 안 된다. `init_T_lidar_camera` 저장을 확인할 때까지 작업자 대기 상태로 유지해야 한다.
+`forks/direct_visual_lidar_calibration/src/initial_guess_manual.cpp` | [main()](../../forks/direct_visual_lidar_calibration/src/initial_guess_manual.cpp#L306)은 GUI 입력을 요구한다. BT가 이 단계를 성공으로 가장하면 안 된다. `init_T_lidar_camera` 저장을 확인할 때까지 작업자 대기 상태로 유지해야 한다.
 
 #### 5. BT가 해결하지 않는 문제
 
@@ -171,13 +171,13 @@ topic과 message count가 존재해도 image가 어둡거나, LiDAR intensity �
 
 #### 최소 구현 순서
 
-1. PATCH-02의 pose 수집과 PATCH-03·04의 script를 먼저 실제 파일로 구현한다.
+1. Simulation PATCH-02의 pose 수집과 Simulation PATCH-03·04의 script를 먼저 실제 파일로 구현한다.
 2. `SensorsReady`, `WaitStationary`, `RecordPoseBag`, `ValidatePoseBag`만 포함한 capture tree를 만든다.
 3. 정상 bag 보존과 실패 pose 재수집을 smoke test한다.
 4. offline `Preprocess`, operator wait, `RunCalibration`, `ValidateExtrinsic`을 연결한다.
 5. 반복 무인 실행 필요가 확인된 뒤에만 BT live viewer 의존성을 추가한다.
 
-NID optimizer 내부 iteration이나 `forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp` | [Turtlebot3Drive::update_callback()](../forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp#L110)의 주기 제어는 leaf action 내부 구현으로 유지한다. BT는 장시간 작업의 시작·완료·실패·복구만 관리한다.
+NID optimizer 내부 iteration이나 `forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp` | [Turtlebot3Drive::update_callback()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/src/turtlebot3_drive.cpp#L110)의 주기 제어는 leaf action 내부 구현으로 유지한다. BT는 장시간 작업의 시작·완료·실패·복구만 관리한다.
 
 #### 검증 시나리오
 

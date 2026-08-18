@@ -1,7 +1,7 @@
-# PATCH-18: 자체 Humanoid Isaac Lab 학습과 Sim2Real
+# Simulation PATCH-12: 자체 Humanoid Isaac Lab 학습과 Sim2Real
 
 - 작성일: 2026-08-15
-- 선행 조건: PATCH-16 URDF, PATCH-17 hardware·safety interface
+- 선행 조건: Embedded PATCH-04 URDF, Embedded PATCH-05 hardware·safety interface
 - 대상: 향후 `humanoid/isaac_lab/`, `humanoid/deployment/`
 - 결론: **URDF를 USD로 변환한 뒤 physics·actuator·contact를 먼저 검증한다. stand→weight shift→저속 보행 curriculum으로 PPO를 학습하고, system identification 기반 randomization·shadow mode·safety tether를 거쳐 실물에 적용한다.**
 
@@ -18,6 +18,24 @@
 | [Berkeley Humanoid Lite](https://github.com/HybridRobotics/Berkeley-Humanoid-Lite) | custom humanoid의 Isaac Lab task→실물 구조 참고 |
 
 Isaac Lab과 Isaac Sim version은 서로 맞는 release 조합으로 고정한다. `latest` 문서의 명령을 설치된 version에 그대로 적용하지 않고 해당 release 문서를 확인한다.
+
+## Embedded
+
+Humanoid policy의 Embedded 실습은 training code보다 **배포되는 observation→action 계약과 deadline**을 검증하는 일이다. Pi 5는 ROS 2·state estimation·policy를, MCU는 빠른 actuator I/O·watchdog·hard limit를 담당한다.
+
+| 개념 | 이 PATCH의 검증 |
+|---|---|
+| export runtime | TorchScript·ONNX가 학습 runtime과 같은 action을 내는지 |
+| preprocessing ownership | normalization, frame, unit, history가 model 안팎 어디에 있는지 |
+| policy/low-level rate | 느린 policy target 사이를 MCU controller가 어떻게 실행하는지 |
+| compute budget | inference, ROS callback, serialization을 합친 deadline |
+| thermal sustainability | 장시간 부하에서도 deadline 유지 여부 |
+
+[Isaac Lab exporter](https://isaac-sim.github.io/IsaacLab/main/_modules/isaaclab_rl/rsl_rl/exporter.html)로 export contract를 확인하고, NVIDIA target을 선택했을 때만 [TensorRT ONNX 배포 문서](https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-onnx-deployment.html)를 사용한다.
+
+신입은 fixed observation fixture에서 action parity와 replay를 검증한다. 1~2년차는 Pi 5의 end-to-end latency·temperature를 측정하고 MCU command interpolation·timeout 계약을 Embedded PATCH-05와 함께 설계할 수 있다. 실물 무지지 보행, 자체 motor driver, 기능 안전은 이 경력 범위의 단독 완료 조건으로 두지 않는다.
+
+GitHub에는 `docs/embedded/sim12_policy_contract.md`, `docs/embedded/sim12_onboard_benchmark.md`, `docs/embedded/sim12_sim2real_limits.md`를 남긴다. 성공 episode만 올리지 않고 fall, deadline miss, operator stop과 원인도 같은 schema로 기록한다.
 
 ## 1. 계획 디렉터리
 
@@ -42,14 +60,14 @@ Isaac Lab 자체를 fork 안에 복사하지 않는다. 고정 release dependenc
 
 ## 2. URDF를 USD로 가져온다
 
-PATCH-16에서 생성한 순수 URDF를 source로 사용한다.
+Embedded PATCH-04에서 생성한 순수 URDF를 source로 사용한다.
 
 | import 항목 | 결정 |
 |---|---|
 | robot type | Humanoid |
 | base | locomotion용 floating base |
 | visual | merge 가능 여부를 성능 측정 후 선택 |
-| collision | PATCH-16 단순 collision 사용 |
+| collision | Embedded PATCH-04 단순 collision 사용 |
 | self-collision | 켠 상태와 끈 상태를 비교하고 의도한 pair만 조정 |
 | output | version이 붙은 USD와 import manifest |
 
@@ -71,7 +89,7 @@ URDF importer는 joint stiffness·damping을 0으로 둘 수 있다. 공식 Gain
 
 ## 4. Actuator model을 실측한다
 
-PATCH-15·17 rig에서 동일 command sequence를 simulation과 real actuator에 넣는다.
+Embedded PATCH-03·17 rig에서 동일 command sequence를 simulation과 real actuator에 넣는다.
 
 | 식별값 | 측정 |
 |---|---|
@@ -104,7 +122,7 @@ nominal model은 held-out trajectory에서도 position·velocity response 오차
 | observation | base angular velocity, projected gravity, joint position·velocity, previous action, velocity command |
 | action | nominal pose 주변 joint position target offset |
 | policy rate | 요구사항에서 정한 값 |
-| low-level rate | PATCH-17 actuator loop rate |
+| low-level rate | Embedded PATCH-05 actuator loop rate |
 | privileged observation | simulation critic에만 사용하면 명시 |
 
 reward는 최소한 다음 범주를 분리 기록한다.
@@ -237,7 +255,7 @@ Isaac Lab exporter로 TorchScript 또는 ONNX 중 Raspberry Pi 5에서 deadline�
 6. safety tether와 보조자, 낮은 자세에서 stand
 7. 평지 저속 보행
 
-policy output은 PATCH-17 joint limit·rate limit·fault handler를 우회할 수 없다. emergency stop은 policy process와 독립적으로 작동해야 한다.
+policy output은 Embedded PATCH-05 joint limit·rate limit·fault handler를 우회할 수 없다. emergency stop은 policy process와 독립적으로 작동해야 한다.
 
 ## 13. 최종 Sim2Real 평가
 
@@ -264,9 +282,9 @@ policy output은 PATCH-17 joint limit·rate limit·fault handler를 우회할 �
 - export runtime parity와 Raspberry Pi 5 control deadline 통과
 - 10,000회 benchmark의 p50·p95·max·deadline miss·온도 기록
 - Pi 5 CPU, AI HAT+, Jetson 중 실제 측정으로 하나의 배포 경로 선택
-- 선택한 compute board의 전력·냉각·질량을 PATCH-16 CAD와 PATCH-17 power budget에 반영
+- 선택한 compute board의 전력·냉각·질량을 Embedded PATCH-04 CAD와 Embedded PATCH-05 power budget에 반영
 - replay→shadow→tether→저속 실물 승격 순서 준수
 - simulation과 real metric을 같은 정의로 보고
 - emergency stop·watchdog·joint limit가 policy와 독립적으로 작동
 
-**PATCH-18이 최종 목표의 첫 완성점이다. 자체 CAD Humanoid가 동일한 robot description·action 계약으로 Isaac Lab에서 학습되고, 제한된 실물 task에서 정량 검증된다.**
+**Simulation PATCH-12이 최종 목표의 첫 완성점이다. 자체 CAD Humanoid가 동일한 robot description·action 계약으로 Isaac Lab에서 학습되고, 제한된 실물 task에서 정량 검증된다.**

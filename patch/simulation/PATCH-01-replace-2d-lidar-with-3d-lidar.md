@@ -1,4 +1,4 @@
-# PATCH-01: 기존 2D LiDAR를 3D LiDAR로 교체
+# Simulation PATCH-01: 기존 2D LiDAR를 3D LiDAR로 교체
 
 ## 이 PATCH에서 만드는 것
 
@@ -80,7 +80,7 @@ PCL(Point Cloud Library)은 point cloud를 읽고, 변환하고, 필터링하고
 
 ## 시작 조건
 
-- PATCH-00 Docker image와 Compose 구성이 준비되어 있다.
+- Simulation PATCH-00 Docker image와 Compose 구성이 준비되어 있다.
 - `forks/turtlebot3_simulations`가 `jazzy` 기반 실습 branch에 있다.
 - 원본 모델 파일에 의도하지 않은 수정이 없다.
 
@@ -273,7 +273,7 @@ URDF의 `camera_rgb_frame -> camera_rgb_optical_frame` fixed joint가 두 좌표
   direction: GZ_TO_ROS
 ```
 
-기존 `scan -> /scan` bridge는 일단 남긴다. 하지만 세로 측정선이 추가된 뒤의 `/scan`이 기존 단일 평면 `LaserScan`과 완전히 같은 의미라고 가정하지 않는다. **Calibration 입력은 `/calib/points`만 사용**한다. PATCH-06에서 장애물 회피용 2D scan이 필요하면 point cloud의 특정 높이 범위를 2D `LaserScan`으로 변환한다.
+기존 `scan -> /scan` bridge는 일단 남긴다. 하지만 세로 측정선이 추가된 뒤의 `/scan`이 기존 단일 평면 `LaserScan`과 완전히 같은 의미라고 가정하지 않는다. **Calibration 입력은 `/calib/points`만 사용**한다. Simulation PATCH-06에서 장애물 회피용 2D scan이 필요하면 point cloud의 특정 높이 범위를 2D `LaserScan`으로 변환한다.
 
 ## 6. 빌드한다
 
@@ -300,7 +300,12 @@ source /ws/install/setup.bash
 
 ## 7. 파생 모델을 실행한다
 
-호스트의 첫 terminal에서 실행한다.
+X11 권한 부여
+```bash
+xhost +si:localuser:root
+```
+
+시뮬레이션 실행
 
 ```bash
 cd /home/swlinux/Desktop/workspace/mobin/docker
@@ -436,7 +441,7 @@ gz topic -l | grep -E 'scan|points'
 ros2 topic echo /calib/points --field fields --once
 ```
 
-이 상태에서는 PATCH-02로 넘어가지 않는다. 0으로 채운 가짜 intensity도 사용하지 않는다. Gazebo point message와 `PointCloudPacked -> PointCloud2` bridge가 intensity field를 제공하는지 먼저 확인한다.
+이 상태에서는 Simulation PATCH-02로 넘어가지 않는다. 0으로 채운 가짜 intensity도 사용하지 않는다. Gazebo point message와 `PointCloudPacked -> PointCloud2` bridge가 intensity field를 제공하는지 먼저 확인한다.
 
 ### TF는 보이지만 point cloud 위치가 이상하다
 
@@ -455,4 +460,4 @@ ros2 topic echo /calib/points --field header --once
 - point cloud filter node 추가
 - calibration 계산과 결과 적용
 
-Calibration 장면 기록은 PATCH-02, 계산은 PATCH-03, 결과 적용과 검증은 PATCH-04에서 진행한다.
+Calibration 장면 기록은 Simulation PATCH-02, 계산은 Simulation PATCH-03, 결과 적용과 검증은 Simulation PATCH-04에서 진행한다.

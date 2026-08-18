@@ -1,2 +1,7 @@
 # Independently cloned fork repositories
 forks/
+data/bags/
+data/results/*
+!data/results/.gitkeep
+.cct/
+data/rerun/

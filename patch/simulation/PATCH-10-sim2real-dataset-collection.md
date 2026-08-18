@@ -1,4 +1,4 @@
-# PATCH-10: Sim2Real Dataset 수집과 Domain Randomization
+# Simulation PATCH-10: Sim2Real Dataset 수집과 Domain Randomization
 
 - 작성일: 2026-08-07
 - 브랜치: 상위 `main`, TurtleBot3 fork `jazzy`
@@ -8,7 +8,7 @@
 
 ### Why?
 
-PATCH-02는 Camera-LiDAR calibration용 rosbag 기록을 계획한다. IL/RL 데이터로 확장하려면 episode 경계, action, task 결과, controller 설정, randomization 적용값과 split 정보가 추가로 필요하다.
+Simulation PATCH-02는 Camera-LiDAR calibration용 rosbag 기록을 계획한다. IL/RL 데이터로 확장하려면 episode 경계, action, task 결과, controller 설정, randomization 적용값과 split 정보가 추가로 필요하다.
 
 | 현재 부족한 정보 | 필요한 이유 |
 |---|---|
@@ -60,7 +60,7 @@ rosbag만 실행하면 sensor message는 남지만 어떤 실험인지 판단하
 
 ### How it changed
 
-| 이전 계획 | PATCH-10 계획 | 효과 |
+| 이전 계획 | Simulation PATCH-10 계획 | 효과 |
 |---|---|---|
 | calibration rosbag | episode MCAP + manifest | replay와 학습 metadata 동시 보존 |
 | simulation 기본값 고정 | 측정 기반 nominal + randomization profile | 물리 조건별 성능 비교 |
@@ -70,7 +70,7 @@ rosbag만 실행하면 sensor message는 남지만 어떤 실험인지 판단하
 ## 1. 계획 디렉터리
 
 ```text
-# mobile-robot-calibration-repo | planned PATCH-10 layout
+# mobile-robot-calibration-repo | planned Simulation PATCH-10 layout
 mobile-robot-calibration-repo/
 ├── config/
 │   ├── dataset/collector.yaml
@@ -138,7 +138,7 @@ LeRobot writer를 C++로 다시 만들지 않는다. C++ collector 결과도 같
 | `/tf`, `/tf_static` | `tf2_msgs/msg/TFMessage` | frame 관계 | 필수 |
 | `/cmd_vel` | `geometry_msgs/msg/TwistStamped` | applied action | 필수 |
 | `/clock` | `rosgraph_msgs/msg/Clock` | simulation time | simulation 필수 |
-| `/calib/points` | `sensor_msgs/msg/PointCloud2` | PATCH-01 3D LiDAR | calibration 실험 필수 |
+| `/calib/points` | `sensor_msgs/msg/PointCloud2` | Simulation PATCH-01 3D LiDAR | calibration 실험 필수 |
 
 각 sensor의 원본 timestamp와 주기를 유지한다. exporter만 10 Hz 기준 frame으로 sampling한다.
 
@@ -240,7 +240,7 @@ Extrinsic ground truth를 몰래 흔들지 않는다. `nominal_calibration`, `pe
 
 ## 10. 제어 parameter tuning
 
-첫 대상은 PATCH-06 회피 node의 distance threshold, linear speed, angular gain, timeout이다. 별도 optimizer framework 없이 grid/random search부터 쓴다.
+첫 대상은 Simulation PATCH-06 회피 node의 distance threshold, linear speed, angular gain, timeout이다. 별도 optimizer framework 없이 grid/random search부터 쓴다.
 
 | metric | 방향 | 단위 |
 |---|---:|---|
@@ -262,7 +262,7 @@ train seed에서 후보를 만들고 validation seed에서 하나를 선택한�
 | 4 | `turtlebot3_dqn_stage2.world` | obstacle 증가 |
 | 5 | `turtlebot3_dqn_stage3.world` | 좁은 통로·다중 장애물 |
 | 6 | `turtlebot3_dqn_stage4.world` | generalization 평가 |
-| 7 | PATCH-07 저조도 tunnel | sensor/domain robustness |
+| 7 | Simulation PATCH-07 저조도 tunnel | sensor/domain robustness |
 
 DQN world 4개와 model asset은 현재 fork에 존재한다. 수집 전에 headless smoke test와 model URI 검사를 수행한다. Jazzy에서 asset이 제거된 AutoRace world는 제외한다.
 
@@ -292,4 +292,4 @@ DQN world 4개와 model asset은 현재 fork에 존재한다. 수집 전에 head
 - nominal, randomized, real 결과를 같은 metric으로 비교
 - 실제 robot 결과가 없으면 “Sim2Real gap 감소”라고 결론내리지 않음
 
-이번 PATCH는 재현 가능한 데이터 수집과 비교 규약까지다. 모델 학습은 dataset 품질 검증 후 PATCH-13에서 진행한다. 실제 Yahboom system identification은 PATCH-11의 실물 interface 확인 뒤 완료한다.
+이번 PATCH는 재현 가능한 데이터 수집과 비교 규약까지다. 모델 학습은 dataset 품질 검증 후 Simulation PATCH-11에서 진행한다. 실제 Yahboom system identification은 Embedded PATCH-00의 실물 interface 확인 뒤 완료한다.

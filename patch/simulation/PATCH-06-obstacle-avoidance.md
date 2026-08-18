@@ -1,4 +1,4 @@
-# PATCH-06: 장애물 회피 노드 개선 및 검증
+# Simulation PATCH-06: 장애물 회피 노드 개선 및 검증
 
 ## 이 PATCH에서 만드는 것
 
@@ -17,7 +17,7 @@
 
 ## 시작 조건
 
-- PATCH-05의 `static`, `crossing`, `mixed` scenario가 `/scan`에 나타난다.
+- Simulation PATCH-05의 `static`, `crossing`, `mixed` scenario가 `/scan`에 나타난다.
 - 회피 없는 baseline 직진은 장애물과 접촉한다.
 - 기존 package가 build된다.
 
@@ -324,7 +324,7 @@ turtlebot3_drive_node:
 
 ## 8. avoidance launch에서 node를 함께 실행한다
 
-PATCH-05의 `turtlebot3_avoidance.launch.py`에 parameter 경로와 node를 추가한다.
+Simulation PATCH-05의 `turtlebot3_avoidance.launch.py`에 parameter 경로와 node를 추가한다.
 
 ```python
 from launch_ros.actions import Node
@@ -450,7 +450,7 @@ ros2 param get /turtlebot3_drive_node scan_timeout
 
 scan timeout 안전장치는 simulation을 실행한 상태에서 bridge process를 중지하거나 `/scan` remap test로 확인한다. 0.5초 안에 `/cmd_vel.twist`가 0이 되어야 한다.
 
-각 scenario의 평가 bag은 PATCH-05의 topic 목록으로 기록한다.
+각 scenario의 평가 bag은 Simulation PATCH-05의 topic 목록으로 기록한다.
 
 ## 완료 조건
 

@@ -1,4 +1,4 @@
-# PATCH-07: 저조도 터널 환경에서 Extrinsic 강건성 평가
+# Simulation PATCH-07: 저조도 터널 환경에서 Extrinsic 강건성 평가
 
 ## 왜 이 시나리오를 추천하는가
 
@@ -11,16 +11,16 @@
 - 안개처럼 보이는 시각 열화에서 결과를 무조건 신뢰하지 않고 실패를 검출하는 방법
 - 환경만 바뀌고 실제 extrinsic ground truth는 같다는 controlled experiment
 
-새 로봇을 추가하지 않고 PATCH-01의 같은 sensor rig와 PATCH-02의 같은 구조물을 재사용한다. 비교 변수를 환경으로만 제한하기 위해서다.
+새 로봇을 추가하지 않고 Simulation PATCH-01의 같은 sensor rig와 Simulation PATCH-02의 같은 구조물을 재사용한다. 비교 변수를 환경으로만 제한하기 위해서다.
 
 ## 이 PATCH의 위치
 
-PATCH-04까지 완료한 뒤 수행하는 선택 확장이다. PATCH-05와 PATCH-06의 장애물 회피 실습과는 독립적이다.
+Simulation PATCH-04까지 완료한 뒤 수행하는 선택 확장이다. Simulation PATCH-05와 Simulation PATCH-06의 장애물 회피 실습과는 독립적이다.
 
 ```text
-PATCH-02 밝은 실내 dataset ──┐
+Simulation PATCH-02 밝은 실내 dataset ──┐
                             ├─ 같은 ground truth와 비교
-PATCH-07 저조도 터널 dataset ─┘
+Simulation PATCH-07 저조도 터널 dataset ─┘
 ```
 
 ## 추가/수정할 파일
@@ -36,11 +36,11 @@ mobile-robot-calibration-repo/
     └── worlds/turtlebot3_low_light_tunnel.world
 ```
 
-새 model을 만들지 않는다. PATCH-02의 `calibration_scene`을 그대로 include하고 world의 벽, 조명, fog만 추가한다.
+새 model을 만들지 않는다. Simulation PATCH-02의 `calibration_scene`을 그대로 include하고 world의 벽, 조명, fog만 추가한다.
 
 ## 1. 밝은 실내 baseline을 보존한다
 
-PATCH-04 결과를 덮어쓰지 않는다.
+Simulation PATCH-04 결과를 덮어쓰지 않는다.
 
 ```bash
 cd /home/swlinux/Desktop/workspace/mobile-robot-calibration-repo
@@ -57,14 +57,14 @@ baseline에서 기록할 값은 다음과 같다.
 
 ## 2. calibration 실행 스크립트의 경로만 재사용 가능하게 한다
 
-PATCH-03의 `scripts/run-calibration.sh`에서 두 줄을 다음처럼 바꾼다.
+Simulation PATCH-03의 `scripts/run-calibration.sh`에서 두 줄을 다음처럼 바꾼다.
 
 ```bash
 BAGS_DIR=${BAGS_DIR:-"$ROOT_DIR/data/bags"}
 RESULTS_DIR=${RESULTS_DIR:-"$ROOT_DIR/data/results"}
 ```
 
-기본 동작은 바뀌지 않는다. PATCH-07에서만 환경변수로 다른 dataset을 선택한다. 새 스크립트를 복사하지 않는다.
+기본 동작은 바뀌지 않는다. Simulation PATCH-07에서만 환경변수로 다른 dataset을 선택한다. 새 스크립트를 복사하지 않는다.
 
 디렉터리를 만든다.
 
@@ -81,7 +81,7 @@ data/results-low-light/
 
 ## 3. low-light tunnel world를 만든다
 
-PATCH-02 world를 복사한다.
+Simulation PATCH-02 world를 복사한다.
 
 ```bash
 cp forks/turtlebot3_simulations/turtlebot3_gazebo/worlds/turtlebot3_calibration.world \
@@ -206,7 +206,7 @@ fog를 너무 짙게 시작하지 않는다. 먼저 camera의 먼 물체 contras
 
 ## 4. low-light launch를 만든다
 
-PATCH-02 launch를 복사한다.
+Simulation PATCH-02 launch를 복사한다.
 
 ```bash
 cp forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_calibration.launch.py \
@@ -258,7 +258,7 @@ point cloud 자체의 pose나 noise를 바꾸지 않는다. 환경만 바뀌어�
 
 ## 6. 같은 5개 pose에서 low-light bag을 기록한다
 
-PATCH-02의 pose 표를 그대로 사용한다. 예:
+Simulation PATCH-02의 pose 표를 그대로 사용한다. 예:
 
 ```bash
 ros2 launch turtlebot3_gazebo turtlebot3_low_light_tunnel.launch.py \
