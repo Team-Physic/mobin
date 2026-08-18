@@ -24,6 +24,7 @@ x-tb3-common: &tb3-common
     - tb3_install:/ws/install
     - tb3_log:/ws/log
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ../data:/ws/data:rw
 
 services:
   shell:
