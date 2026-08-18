@@ -1,0 +1,53 @@
+# docker/compose.yaml | x-tb3-common.environment, services.sim.command
+name: mobin
+
+x-tb3-common: &tb3-common
+  image: tb3-jazzy-lab:local
+  build:
+    context: ./sim
+    args:
+      TB3_SIM_COMMIT: ${TB3_SIM_COMMIT:-unknown}
+      CALIB_COMMIT: ${CALIB_COMMIT:-unknown}
+  network_mode: host
+  environment:
+    DISPLAY: ${DISPLAY}
+    QT_X11_NO_MITSHM: "1"
+    LIBGL_ALWAYS_SOFTWARE: "1"
+    TURTLEBOT3_MODEL: ${TURTLEBOT3_MODEL:-waffle_pi}
+    TURTLEBOT3_WORLD: ${TURTLEBOT3_WORLD:-turtlebot3_world.world}
+    GAZEBO_GUI: ${GAZEBO_GUI:-true}
+    LAUNCH_RVIZ: ${LAUNCH_RVIZ:-false}
+    GZ_IP: ${GZ_IP:-127.0.0.1}
+    X_POSE: ${X_POSE:--2.0}
+    Y_POSE: ${Y_POSE:--0.5}
+    YAW: ${YAW:-0.0}
+  volumes:
+    - ../forks/turtlebot3_simulations:/ws/src/turtlebot3_simulations:rw
+    - tb3_build:/ws/build
+    - tb3_install:/ws/install
+    - tb3_log:/ws/log
+    - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ../data:/ws/data:rw
+
+services:
+  shell:
+    <<: *tb3-common
+    stdin_open: true
+    tty: true
+    command: bash
+
+  sim:
+    <<: *tb3-common
+    command: >
+      bash -lc "
+        source /opt/ros/jazzy/setup.bash &&
+        test -f /ws/install/setup.bash ||
+          { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
+        source /ws/install/setup.bash &&
+        exec ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+      "
+
+volumes:
+  tb3_build:
+  tb3_install:
+  tb3_log:
