@@ -7,3 +7,6 @@ __pycache__/
 
 # Generated bags, recordings, screenshots, and calibration outputs
 /data/
+
+# Local Codex/Claude session-transfer metadata
+/.cct/
