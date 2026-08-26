@@ -1,2 +1,9 @@
 # Independently cloned fork repositories
 forks/
+
+# Generated Python bytecode
+__pycache__/
+*.pyc
+
+# Generated bags, recordings, screenshots, and calibration outputs
+/data/
