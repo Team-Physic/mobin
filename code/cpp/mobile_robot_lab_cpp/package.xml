@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mobile_robot_lab_cpp</name>
+  <version>0.1.0</version>
+  <description>C++ learning nodes for the Mobin mobile robot lab.</description>
+  <maintainer email="maintainer@example.com">Mobin practice</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+
+  <export><build_type>ament_cmake</build_type></export>
+</package>
