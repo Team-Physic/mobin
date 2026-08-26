@@ -15,14 +15,22 @@ x-tb3-common: &tb3-common
     LIBGL_ALWAYS_SOFTWARE: "1"
     TURTLEBOT3_MODEL: ${TURTLEBOT3_MODEL:-waffle_pi}
     TURTLEBOT3_WORLD: ${TURTLEBOT3_WORLD:-turtlebot3_world.world}
+    TURTLEBOT3_WORLD_DIR: ${TURTLEBOT3_WORLD_DIR:-/ws/install/turtlebot3_gazebo/share/turtlebot3_gazebo/worlds}
     GAZEBO_GUI: ${GAZEBO_GUI:-true}
     LAUNCH_RVIZ: ${LAUNCH_RVIZ:-false}
+    AVOIDANCE_SCENARIO: ${AVOIDANCE_SCENARIO:-static}
+    AVOIDANCE_IMPLEMENTATION: ${AVOIDANCE_IMPLEMENTATION:-cpp}
+    AVOIDANCE_START_DELAY: ${AVOIDANCE_START_DELAY:-10.0}
     GZ_IP: ${GZ_IP:-127.0.0.1}
+    GZ_SIM_RESOURCE_PATH: /opt/aws_warehouse:/opt/aws_warehouse/models
     X_POSE: ${X_POSE:--2.0}
     Y_POSE: ${Y_POSE:--0.5}
     YAW: ${YAW:-0.0}
   volumes:
     - ../forks/turtlebot3_simulations:/ws/src/turtlebot3_simulations:rw
+    - ../forks/aws-robomaker-small-warehouse-world:/opt/aws_warehouse:ro
+    - ../code/python:/ws/src/python:rw
+    - ../code/cpp:/ws/src/cpp:rw
     - tb3_build:/ws/build
     - tb3_install:/ws/install
     - tb3_log:/ws/log
@@ -44,7 +52,18 @@ services:
         test -f /ws/install/setup.bash ||
           { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
         source /ws/install/setup.bash &&
-        exec ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+        exec ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+      "
+
+  avoidance:
+    <<: *tb3-common
+    command: >
+      bash -lc "
+        source /opt/ros/jazzy/setup.bash &&
+        test -f /ws/install/setup.bash ||
+          { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
+        source /ws/install/setup.bash &&
+        exec ros2 launch turtlebot3_gazebo turtlebot3_avoidance.launch.py world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} scenario:=$${AVOIDANCE_SCENARIO} implementation:=$${AVOIDANCE_IMPLEMENTATION} controller_delay:=$${AVOIDANCE_START_DELAY} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
       "
 
 volumes:

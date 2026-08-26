@@ -10,3 +10,9 @@ services:
       - /dev/dri:/dev/dri
     environment:
       LIBGL_ALWAYS_SOFTWARE: "0"
+
+  avoidance:
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      LIBGL_ALWAYS_SOFTWARE: "0"

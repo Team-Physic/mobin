@@ -21,11 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-xfixes0 \
  && python3 -m venv /opt/rerun \
  && /opt/rerun/bin/pip install --no-cache-dir "rerun-sdk==${RERUN_VERSION}" \
+ && ln -s /opt/rerun/bin/rerun /usr/local/bin/rerun \
  && rosdep update \
  && rm -rf /var/lib/apt/lists/*
 
 ENV TURTLEBOT3_MODEL=waffle_pi
-ENV PATH="/opt/rerun/bin:${PATH}"
 
 WORKDIR /ws
 

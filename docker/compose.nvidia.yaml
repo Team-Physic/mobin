@@ -14,3 +14,11 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: graphics,display,utility,compute
       __NV_PRIME_RENDER_OFFLOAD: "1"
       __GLX_VENDOR_LIBRARY_NAME: nvidia
+
+  avoidance:
+    gpus: all
+    environment:
+      LIBGL_ALWAYS_SOFTWARE: "0"
+      NVIDIA_DRIVER_CAPABILITIES: graphics,display,utility,compute
+      __NV_PRIME_RENDER_OFFLOAD: "1"
+      __GLX_VENDOR_LIBRARY_NAME: nvidia
