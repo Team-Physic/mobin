@@ -16,14 +16,16 @@ TurtleBot3 simulation과 실제 board·sensor·motor 실습을 병렬로 진행�
 ## 디렉토리 구조
 
 ```text
-mobile-robot-calibration-repo/
-├── docker/                               # Jazzy/Gazebo Docker 구성
-├── docs/                                 # Git·fork·license 안내
-├── forks/                               # 상위 저장소가 추적하지 않는 독립 Git 저장소
-│   ├── turtlebot3_simulations/          # 내 TurtleBot3 fork
-│   ├── direct_visual_lidar_calibration/ # 내 calibration fork
-│   └── aws-robomaker-small-warehouse-world/ # 내 warehouse asset fork
-└── patch/                                # Patch 단위 구현 절차
+mobin/
+├── code/                                # 직접 작성하는 코드
+│   ├── scripts/                        # calibration 실행 script
+│   ├── python/                         # rclpy 학습 package
+│   └── cpp/                            # rclcpp 학습 package
+├── docker/                              # Jazzy/Gazebo Docker 구성
+├── forks/                               # 독립 Git fork 세 개
+├── data/                                # bag·calibration 결과
+├── docs/                                # Git·fork·license 안내
+└── patch/                               # Patch 단위 구현 절차
     ├── simulation/                       # Docker·Gazebo·학습, PATCH-00부터
     └── embedded/                         # SW·HW 실물 실습, PATCH-00부터
 ```
@@ -86,6 +88,29 @@ git -C forks/aws-robomaker-small-warehouse-world \
 
 공개·상업 배포 전 [license checklist](docs/how_to_fork_and_license.md#license)를 확인한다.
 
+## 창고 장애물 회피 실행
+
+PATCH-05/06 구현은 `avoidance` service 하나로 world, robot, obstacle, 선택한 controller를 실행한다. 현재 controller는 `/scan` 거리만 사용하는 반응형 회피다. `lidar_bbox_association` node는 기존 YOLO의 `vision_msgs/Detection2DArray`와 `/calib/points`를 연결해 `/fusion/associated_points`, `/fusion/detections_3d`를 발행한다. 이 semantic 결과는 아직 `/cmd_vel` 판단에는 연결하지 않는다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin/docker
+
+TURTLEBOT3_MODEL=waffle_pi_3d_large \
+TURTLEBOT3_WORLD_DIR=/opt/aws_warehouse/worlds/small_warehouse \
+TURTLEBOT3_WORLD=small_warehouse_harmonic.world \
+AVOIDANCE_SCENARIO=crossing \
+AVOIDANCE_IMPLEMENTATION=cpp \
+AVOIDANCE_START_DELAY=10.0 \
+X_POSE=-2.0 Y_POSE=-0.5 YAW=0.0 \
+GAZEBO_GUI=true LAUNCH_RVIZ=true \
+docker compose \
+  -f compose.yaml \
+  -f compose.nvidia.yaml \
+  up --force-recreate avoidance
+```
+
+`waffle_pi_3d_large`는 warehouse 가시성을 위한 3배 model이다. Calibration 기준 크기는 원본 `waffle_pi_3d`를 사용한다. `crossing`의 사람과 pallet jack는 같은 model link에 속해 하나의 pose로 항상 함께 이동한다. 이동 전에는 camera 밖 staging 좌표에 있고, 출발 순간 초록 통로에 나타나 +y 방향으로 robot 진행선과 교차한다. Scenario 전용 robot 속도는 `0.25 m/s`다. 오른쪽 sector가 점유된 동안 정지하고, 사람+cart가 통과하면 오른쪽으로 회피한다. 전체 parameter·license·검증은 [PATCH-05](patch/simulation/PATCH-05-obstacle-scenarios.md)와 [PATCH-06](patch/simulation/PATCH-06-obstacle-avoidance.md)을 따른다.
+
 ## TODO
 
 1. [O] [Fork clone·수정·license 준수](docs/how_to_fork_and_license.md)
@@ -97,8 +122,8 @@ git -C forks/aws-robomaker-small-warehouse-world \
 3. [ ] [PATCH-02: Calibration scene과 MCAP](patch/simulation/PATCH-02-calibration-scene-recording.md)
 4. [ ] [PATCH-03: Extrinsic 계산](patch/simulation/PATCH-03-run-calibration.md)
 5. [ ] [PATCH-04: URDF 반영과 정량 검증](patch/simulation/PATCH-04-apply-and-verify.md)
-6. [ ] [PATCH-05: AWS Warehouse의 Gazebo Harmonic 이식](patch/simulation/PATCH-05-obstacle-scenarios.md)
-7. [ ] [PATCH-06: 장애물 회피 node](patch/simulation/PATCH-06-obstacle-avoidance.md)
+6. [O] [PATCH-05: AWS Warehouse의 Gazebo Harmonic 이식](patch/simulation/PATCH-05-obstacle-scenarios.md)
+7. [O] [PATCH-06: 장애물 회피 node](patch/simulation/PATCH-06-obstacle-avoidance.md)
 8. [ ] [PATCH-07: 저조도 터널 calibration 강건성](patch/simulation/PATCH-07-low-light-tunnel-robustness.md)
 9. [ ] [PATCH-08: Behavior Tree calibration workflow](patch/simulation/PATCH-08-behavior-tree-calibration-orchestration.md)
 10. [ ] [PATCH-09: GitHub Actions CI/CD](patch/simulation/PATCH-09-github-actions-ci-cd.md)
