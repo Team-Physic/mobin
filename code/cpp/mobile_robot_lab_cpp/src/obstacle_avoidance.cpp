@@ -1,6 +1,7 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -110,10 +111,17 @@ private:
       return;
     }
 
-    if (*distances_.front <= stop_distance_ && !avoiding_) {
+    double hazard_distance = *distances_.front;
+    if (preferred_turn_direction_ == "left") {
+      hazard_distance = std::min(hazard_distance, *distances_.left);
+    } else if (preferred_turn_direction_ == "right") {
+      hazard_distance = std::min(hazard_distance, *distances_.right);
+    }
+
+    if (hazard_distance <= stop_distance_ && !avoiding_) {
       avoiding_ = true;
       turn_direction_ = choose_turn_direction();
-    } else if (avoiding_ && *distances_.front >= clear_distance_) {
+    } else if (avoiding_ && hazard_distance >= clear_distance_) {
       avoiding_ = false;
       turn_direction_ = 0;
     }

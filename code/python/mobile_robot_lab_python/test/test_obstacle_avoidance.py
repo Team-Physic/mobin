@@ -39,11 +39,14 @@ class ObstacleAvoidanceTest(unittest.TestCase):
         policy = AvoidancePolicy(
             0.45, 0.55, 0.40, 0.15, 0.8, preferred_turn_direction='right')
         self.assertEqual(
-            policy.command(SectorDistances(0.4, 1.0, 0.3)),
+            policy.command(SectorDistances(1.0, 1.0, 0.3)),
             (0.0, 0.0, 'blocked'))
         self.assertEqual(
-            policy.command(SectorDistances(0.4, 1.0, 1.0)),
+            policy.command(SectorDistances(1.0, 1.0, 0.5)),
             (0.0, -0.8, 'turn_right'))
+        self.assertEqual(
+            policy.command(SectorDistances(1.0, 1.0, 0.6)),
+            (0.15, 0.0, 'forward'))
 
 
 if __name__ == '__main__':

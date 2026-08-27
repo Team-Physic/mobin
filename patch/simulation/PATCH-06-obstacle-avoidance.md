@@ -8,7 +8,7 @@
 
 같은 parameter와 topic 계약을 쓰는 Python·C++ 회피 node를 각각 만들었다. Sensor data가 없거나 오래되면 정지한다. 기본값은 더 열린 방향을 선택하지만 `crossing`에서는 사람+cart를 마주치면 오른쪽 회피를 우선한다.
 
-**회피 controller는 LiDAR 거리만 사용하는 안전 baseline이다.** 별도 `lidar_bbox_association` node는 `/detections`, `/calib/points`, `/camera/camera_info`, TF를 받아 YOLO bbox와 LiDAR point를 연결한다. 아직 이 semantic 결과로 `/cmd_vel`을 바꾸지는 않는다.
+**PATCH-06 회피 controller는 LiDAR 거리만 사용하는 안전 baseline이다.** 별도 perception pipeline은 YOLO-World의 `person` bbox와 LiDAR point를 연결하고, ground를 제거한 3D 위치를 `odom`에서 Hungarian assignment로 추적한다. PATCH-08의 `semantic_safety`가 이 결과로 Nav2 속도를 감속·정지한다.
 
 ## What I Made
 
@@ -43,9 +43,9 @@ code/cpp/mobile_robot_lab_cpp/
 
 | 구분 | 현재 PATCH-06 | Camera–LiDAR semantic fusion |
 |---|---|---|
-| Camera 입력 | 사용하지 않음 | image에서 cart bbox 또는 mask 검출 |
+| Camera 입력 | 사용하지 않음 | image에서 person bbox 검출 |
 | LiDAR 입력 | `/scan`의 방향별 최단 거리 | calibration extrinsic으로 3D point를 image pixel에 투영 |
-| 판단 | 물체 종류와 무관하게 거리 임계값으로 회피 | cart 영역에 겹친 point로 cart의 거리·3D 위치 계산 |
+| 판단 | 물체 종류와 무관하게 거리 임계값으로 회피 | person 영역에 겹친 point로 사람의 거리·3D 위치 계산 |
 | AI model | 없음 | YOLO·RT-DETR 같은 object detector가 별도로 필요 |
 
 [MediaPipe Solutions](https://developers.google.com/edge/mediapipe/solutions/guide)에도 object detection task와 custom model 경로가 있다. 그러나 MediaPipe 자체가 pallet jack class를 보장하는 detector는 아니다. 이미 학습·검증한 YOLO가 있으므로 inference framework만 바꾸는 작업은 중복이다. **기존 YOLO bbox를 재사용하고, 이 PATCH에는 Python/C++ 계산 core와 ROS 2 association node를 추가했다.**
@@ -62,7 +62,7 @@ LiDAR point (x,y,z)
 
 | 입력 | 출처 | 역할 |
 |---|---|---|
-| YOLO bbox `(u_min,v_min,u_max,v_max)` | 기존 YOLO 프로젝트 | 영상에서 cart가 차지한 영역 |
+| YOLO bbox `(u_min,v_min,u_max,v_max)` | YOLO-World node | 영상에서 사람이 차지한 영역 |
 | LiDAR points | `/calib/points` | 각 pixel 후보의 실제 3D 깊이 |
 | `T_camera_lidar` | PATCH-04 calibration 결과 | LiDAR 좌표를 Camera optical 좌표로 변환 |
 | `fx,fy,cx,cy` | `/camera/camera_info` | Camera 3D 좌표를 image pixel로 투영 |
@@ -95,7 +95,7 @@ Python은 알고리즘을 빠르게 읽고 수정하기 좋다. C++은 실시간
 | LiDAR-only fallback 유지 | detector miss·지연에도 unknown obstacle 안전 회피 |
 | 후속 MCAP 평가 | 3D position error, end-to-end latency, detection miss 측정 |
 
-이 PATCH는 **fusion 계산 core, ROS 2 topic 연결, 단위검사까지 구현**한다. YOLO weight가 이 repository에 없으므로 detector 자체가 실행됐다고 주장하지 않는다. `lidar_bbox_association`은 0.1초보다 오래된 detection을 거부해 과거 bbox와 현재 point cloud를 잘못 결합하지 않는다.
+이 PATCH는 **YOLO-World detector, fusion core, ground removal, ROS 2 topic 연결, 다인 tracking까지 구현**한다. Weight는 `model/yolo-world/yolov8s-worldv2.pt`에 두며 Git에는 포함하지 않는다. `lidar_bbox_association`은 detection과 point cloud의 timestamp 차이가 50 ms를 넘으면 결합하지 않는다.
 
 ## What was problem
 
@@ -107,9 +107,12 @@ Python은 알고리즘을 빠르게 읽고 수정하기 좋다. C++은 실시간
 | 정지 경계 noise | 전진·회전 반복 | stop/clear 두 임계값 사용 |
 | 좌우 거리가 비슷함 | `turn_left/right` 빠른 반복 | 회전 방향을 회피 종료까지 유지 |
 | crossing에서 좌·우 선택이 실행마다 달라짐 | 사람+cart 앞에서 결과 재현이 어려움 | `preferred_turn_direction=right`를 scenario override로 전달 |
-| 두 model이 첫 횡단에서 만나지 않음 | robot `0.15 m/s`, cart `0.35 m/s`로 교차점 도착시각이 약 9초 차이 | `crossing`의 robot만 `linear_velocity=0.25 m/s`로 설정 |
+| cart가 순간이동한 뒤 추돌 | 먼 접근 과정이 없고 정면 sector만 회피 시작에 사용 | cart를 `(0.9,-5.0)`에서 연속 이동하고 지정 오른쪽 sector도 hazard에 포함 |
 | 3배 robot이 감지 전에 접촉 | collision은 커졌지만 거리 임계값은 원본 | large model에 stop/clear/side=`1.0/1.2/0.7 m` 적용 |
 | Python/C++ 동시 실행 | `/cmd_vel` publisher 충돌 | launch가 하나만 선택 |
+| 바닥 point가 person bbox 안에 투영 | 사람 위치가 바닥 쪽으로 치우침 | cloud를 `base_footprint`로 변환해 `z <= 0.05 m` 제거 |
+| robot 이동 때 trajectory도 함께 이동 | `base_link` 기준 위치 저장 | 사람 위치를 local 고정 좌표계 `odom`으로 변환해 저장 |
+| 가까운 여러 사람의 ID 교환 | 각 frame에서 최근접 pair를 순서대로 선택 | Hungarian assignment로 전체 거리 합 최소화, 0.75 m gate 적용 |
 
 ## How it changed
 
@@ -142,16 +145,21 @@ if bbox.u_min <= u <= bbox.u_max and bbox.v_min <= v <= bbox.v_max:
 | `/calib/points` | `sensor_msgs/msg/PointCloud2` | LiDAR 3D point 입력 |
 | `/camera/camera_info` | `sensor_msgs/msg/CameraInfo` | `fx, fy, cx, cy` 입력 |
 | `/fusion/associated_points` | `sensor_msgs/msg/PointCloud2` | bbox 안에 투영된 point만 발행 |
-| `/fusion/detections_3d` | `geometry_msgs/msg/PoseArray` | bbox별 median 3D 위치 발행 |
+| `/fusion/detections_3d` | `vision_msgs/msg/Detection3DArray` | bbox별 3D 위치와 class·score를 `odom` 기준으로 발행 |
+| `/tracking/persons` | `mobile_robot_lab_msgs/msg/TrackedPersonArray` | 사람별 ID·state·position·velocity·covariance 발행 |
+| `/tracking/markers` | `visualization_msgs/msg/MarkerArray` | 현재 위치·속도·trajectory·covariance 표시 |
 
-`LidarBboxAssociationNode.on_points()`는 point cloud 시각의 `cloud.header.frame_id → camera_info.header.frame_id` TF를 조회한다. 이 TF가 PATCH-04에서 검증한 extrinsic이다. Detection과 point cloud의 timestamp 차이가 `max_time_delta`보다 크거나 TF가 없으면 결과를 만들지 않는다.
+`LidarBboxAssociationNode.on_detection_points()`는 동기화된 detection과 cloud를 받는다. 같은 cloud 시각에서 Camera, `base_footprint`, `odom`으로 가는 TF를 조회한다. Camera TF는 bbox 투영, `base_footprint` TF는 ground removal, `odom` TF는 tracking에 사용한다.
 
 ```python
-# code/python/.../lidar_bbox_association_node.py | LidarBboxAssociationNode.on_points()
-transform = self.tf_buffer.lookup_transform(
-    camera_frame, cloud.header.frame_id,
-    Time.from_msg(cloud.header.stamp),
-    timeout=Duration(seconds=0.05))
+# code/python/.../lidar_bbox_association_node.py | LidarBboxAssociationNode.on_detection_points()
+ground_transform = self.tf_buffer.lookup_transform(
+    self.ground_frame, cloud.header.frame_id,
+    Time.from_msg(cloud.header.stamp), timeout=Duration(seconds=0.05))
+
+# base_footprint 기준 높이가 5 cm 이하인 바닥 point를 제거한다.
+lidar_points = remove_ground(
+    raw_points, ground_rotation, ground_translation, self.ground_height)
 
 # 같은 bbox에 연결된 LiDAR point를 별도 cloud로 발행해 RViz/Rerun에서 확인한다.
 self.points_publisher.publish(point_cloud2.create_cloud_xyz32(
@@ -160,10 +168,21 @@ self.points_publisher.publish(point_cloud2.create_cloud_xyz32(
 
 | parameter | 기본값 | 의미 |
 |---|---:|---|
-| `target_class` | `cart` | 이 class ID만 association. 빈 문자열은 모든 class |
+| `target_class` | `person` | 이 class ID만 association. 빈 문자열은 모든 class |
 | `min_score` | `0.5` | YOLO confidence 하한 |
 | `min_points` | `3` | bbox에 필요한 최소 LiDAR point 수 |
-| `max_time_delta` | `0.1 s` | detection–point cloud 허용 timestamp 차이 |
+| `max_time_delta` | `0.05 s` | detection–point cloud 허용 timestamp 차이 |
+| `ground_frame` / `ground_height` | `base_footprint` / `0.05 m` | 바닥 제거 기준 좌표계와 높이 |
+| `tracking_frame` | `odom` | robot 이동과 분리해 trajectory를 누적할 local frame |
+| `assignment_distance` | `0.75 m` | track–detection Hungarian pair 허용 거리 |
+| `track_max_age` | `1.0 s` | detection이 사라진 track을 유지할 시간 |
+| `trajectory_length` | `50` | track별 MarkerArray 경로 점 최대 개수 |
+
+### Hungarian assignment
+
+한 frame에 여러 사람이 있으면 기존 track과 새 3D detection을 1:1로 연결해야 한다. Greedy는 가장 가까운 pair부터 확정해 뒤 track에 나쁜 선택만 남길 수 있다. `PersonTracker._hungarian_matches()`는 모든 pair의 3D 거리 cost를 한 행렬로 만들고 **전체 합이 최소인 1:1 조합**을 구한다. 0.75 m보다 먼 pair는 배정하지 않고 새 ID를 만든다.
+
+`odom`은 로봇 본체에 붙은 frame이 아니다. 주행 시작점 근처에 고정된 local 좌표계이고 `base_link`가 그 아래에서 움직인다. 따라서 `base_link`에 trajectory를 저장하면 정지한 사람도 robot motion의 반대 방향으로 움직여 보이지만, `odom`에서는 실제 scene 내 이동 경로로 보인다. 장시간 wheel odometry drift는 남으므로 map 기반 장기 추적은 후속 범위다.
 
 ### 공통 parameter
 
@@ -178,10 +197,10 @@ self.points_publisher.publish(point_cloud2.create_cloud_xyz32(
 | `side_distance` | 0.40 m | 회전할 측면이 막혔다고 보는 거리 |
 | `scan_timeout` | 0.5 s | sensor fault 정지 시간 |
 | `front_half_angle_deg` | 15° | 정면 sector 반쪽 각도 |
-| `side_angle_deg` | 60° | 좌·우 판단 범위 |
+| `side_angle_deg` | 60° | 좌·우 판단 범위; `crossing`은 오른쪽 횡단 접근을 포함하도록 85° |
 | `preferred_turn_direction` | `auto` | `auto`는 막히면 반대쪽 전환; `left`·`right`는 지정 방향이 열릴 때까지 정지 |
 
-`crossing` launch는 `linear_velocity=0.25 m/s`, `preferred_turn_direction=right`를 덮어쓴다. 이는 `X_POSE=-2.0`인 robot과 `x=0.9 m` 통로를 지나는 사람+cart가 **첫 +y 횡단에서 만나게 하는 scenario 전용 값**이다. YAML의 다른 scenario 기본속도 `0.15 m/s`는 바꾸지 않는다.
+`crossing` launch는 `linear_velocity=0.14 m/s`, `side_angle_deg=85°`, `preferred_turn_direction=right`를 덮어쓴다. 이는 `X_POSE=-2.0`인 robot과 먼 지점 `(0.9,-5.0)`에서 접근하는 사람+cart가 **첫 +y 횡단에서 만나게 하는 scenario 전용 값**이다. YAML의 다른 scenario 기본속도 `0.15 m/s`, `side_angle_deg=60°`는 바꾸지 않는다.
 
 사람+cart가 오른쪽 sector를 점유한 동안 robot은 `blocked`로 정지한다. 통과 후 오른쪽 sector가 열리면 `turn_right`를 실행한다. 따라서 지정 방향이 막혔는데도 그쪽으로 회전하지 않고, 요구한 오른쪽 회피를 임의로 왼쪽 회피로 바꾸지도 않는다.
 
@@ -269,7 +288,7 @@ docker compose \
 `colcon test-result` 통과 결과:
 
 ```text
-Summary: 7 tests, 0 errors, 0 failures, 0 skipped
+Summary: 12 tests, 0 errors, 0 failures, 0 skipped
 ```
 
 검사 범위:
@@ -282,6 +301,10 @@ Summary: 7 tests, 0 errors, 0 failures, 0 skipped
 - YOLO bbox 안의 point만 3D 위치에 포함되는지
 - bbox 안 point가 세 개보다 적으면 association이 실패하는지
 - TF quaternion이 올바른 3×3 회전행렬로 바뀌는지
+- `base_footprint` 변환 뒤 0.05 m 이하 point가 제거되는지
+- Hungarian 전체 배정이 crossing pair의 ID를 유지하는지
+- 0.75 m 밖 detection이 새 track ID를 받는지
+- YOLO 결과가 class·confidence·bbox·image timestamp를 보존하는지
 
 ## Scenario 실행
 
@@ -304,25 +327,22 @@ docker compose \
   up --force-recreate avoidance
 ```
 
-Python으로 바꾸려면 `AVOIDANCE_IMPLEMENTATION=python`만 바꾼다. `static`, `crossing`, `mixed`도 같은 방식이다. 대기 시간은 `AVOIDANCE_START_DELAY`의 초 단위 값으로 조절한다.
+Python으로 바꾸려면 `AVOIDANCE_IMPLEMENTATION=python`만 바꾼다. `static`, `crossing`, `mixed`, `multi_person`도 같은 방식이다. 대기 시간은 `AVOIDANCE_START_DELAY`의 초 단위 값으로 조절한다.
 
-`crossing`에서는 launch가 `linear_velocity=0.25 m/s`, `preferred_turn_direction=right`를 자동으로 덮어쓴다. `waffle_pi_3d_large`에서는 확대 collision에 맞춰 정지거리도 자동 확대한다.
+`crossing`에서는 launch가 `linear_velocity=0.14 m/s`, `side_angle_deg=85°`, `preferred_turn_direction=right`를 자동으로 덮어쓴다. `waffle_pi_3d_large`에서는 확대 collision에 맞춰 정지거리도 자동 확대한다.
 
 ## LiDAR–bbox association 실행
 
-YOLO node가 `/detections`를 발행하는 상태에서 개발 shell로 실행한다.
+`perception` service가 GPU YOLO-World node와 association node를 함께 실행한다.
+
+`compose.yaml`의 `network_mode: host`는 ROS 2 discovery를 공유하고, `ipc: host`는 Fast DDS가 큰 image·point cloud를 같은 shared-memory 공간에서 전달하게 한다. `ipc: host`가 없으면 topic 이름과 publisher는 보이는데 별도 `perception` container가 `/camera/image_raw` payload를 받지 못할 수 있다.
 
 ```bash
 cd /home/swlinux/Desktop/workspace/mobin/docker
-docker compose -f compose.yaml -f compose.nvidia.yaml exec avoidance bash
-
-source /opt/ros/jazzy/setup.bash
-source /ws/install/setup.bash
-ros2 run mobile_robot_lab_python lidar_bbox_association --ros-args \
-  -p target_class:=cart \
-  -p min_score:=0.5 \
-  -p min_points:=3 \
-  -p max_time_delta:=0.1
+YOLO_DEVICE=0 docker compose \
+  -f compose.yaml \
+  -f compose.nvidia.yaml \
+  up --force-recreate perception
 ```
 
 확인:
@@ -331,9 +351,11 @@ ros2 run mobile_robot_lab_python lidar_bbox_association --ros-args \
 ros2 topic hz /detections
 ros2 topic hz /fusion/associated_points
 ros2 topic echo /fusion/detections_3d --once
+ros2 topic echo /tracking/persons --once
+ros2 topic echo /tracking/markers --once
 ```
 
-RViz에서 `/calib/points`를 회색, `/fusion/associated_points`를 초록색으로 함께 표시한다. 초록 point가 cart bbox의 영상 영역에 대응해야 한다. **bbox 안에는 뒤쪽 선반 point도 들어올 수 있다.** 이 baseline의 정량 평가와 depth clustering 개선은 PATCH-13에서 수행한다.
+RViz Fixed Frame을 `odom`으로 둔다. `/calib/points`는 회색, `/fusion/associated_points`는 초록색 `PointCloud2`, `/tracking/markers`는 `MarkerArray`로 추가한다. sphere·`person N` label·velocity arrow·trajectory·covariance ellipse가 같은 사람을 따라가야 한다. **bbox 안에는 뒤쪽 선반 point도 들어올 수 있다.** 정량 평가는 PATCH-07에서 수행한다.
 
 ## 실행 중 확인
 
@@ -381,7 +403,9 @@ avoidance mode: turn_right
 avoidance mode: forward
 ```
 
-사람+cart는 같은 model link의 pose `(0.9,-1.3)`에서 시작해 첫 경로를 +y로 함께 이동했다. Robot은 접근 중 오른쪽 sector가 점유되자 `blocked`로 정지했고, 통과 후 `turn_right`로 전환했다. 사람만 따로 이동하는 pedestrian 경로는 없다.
+단일 `crossing`은 사람+cart 결합 model을 사용한다. 별도 `multi_person`은 서로 다른 사람 2~5명을 독립 entity와 lane으로 생성한다.
+
+2026-08-27 다인 GPU pipeline 검증에서는 `device=0`, `prompts=['person']`으로 YOLO-World가 준비됐다. Positive sample에서 `/fusion/detections_3d`로 사람 2명과 confidence `0.928`, `0.905`를 수신했고, `/tracking/persons`에서 track ID `98`, `99`의 position·velocity·covariance를 확인했다. Camera FoV에 사람이 없는 frame의 `/detections=[]`는 정상적인 negative sample이다.
 
 회전 방향 latch 전에는 C++ 로그가 0.3초 간격으로 좌우 전환했다. latch 반영 후 같은 정적 scenario에서 한 방향을 유지하고 `forward`로 복귀했다.
 

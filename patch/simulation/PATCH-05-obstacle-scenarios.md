@@ -6,7 +6,7 @@
 
 ## 결론
 
-AWS Small Warehouse의 ROS 2 world를 Gazebo Harmonic에서 여는 이식본을 만들었다. 같은 world에 정적 box, 통로를 가로지르는 이동 cart, 두 장애물을 함께 넣는 세 scenario를 추가했다.
+AWS Small Warehouse의 ROS 2 world를 Gazebo Harmonic에서 여는 이식본을 만들었다. 정적 box, 사람+cart crossing, mixed, 서로 다른 사람 2~5명이 횡단하는 `multi_person` scenario를 제공한다.
 
 **Calibration 결과와 무관하게 실행 가능하다.** PATCH-05는 LiDAR–Camera 투영이 아니라 `/scan` 기반 주행 환경을 검증한다.
 
@@ -18,11 +18,12 @@ AWS Small Warehouse의 ROS 2 world를 Gazebo Harmonic에서 여는 이식본을 
 | 정적 장애물 | 0.45 × 0.45 × 0.60 m box |
 | 이동 장애물 | AWS pallet jack와 CC0 사람 mesh를 한 link로 묶어 simulation time 기준 왕복 |
 | warehouse robot | 원본의 visual·collision·joint·sensor pose를 3배로 만든 `waffle_pi_3d_large` |
-| scenario | `static`, `crossing`, `mixed` |
+| scenario | `static`, `crossing`, `mixed`, `multi_person` |
+| 다인 보행자 | Gazebo Fuel 사람 asset 5종 중 seed로 2~5종 선택 |
 | 실행 진입점 | `turtlebot3_avoidance.launch.py`와 Compose `avoidance` service |
 | 초기 대기 | Gazebo·sensor는 먼저 시작하고 controller는 기본 10초 후 시작 |
-| 초기 GUI 시점 | robot과 moving cart 첫 waypoint `(0.9, -1.3)`이 함께 보이는 넓은 구도 |
-| cart 시작 대기 | camera 밖 `(-50,-50)`에 생성한 뒤 10초 후 첫 waypoint로 이동해 20 Hz로 왕복 |
+| 초기 GUI 시점 | robot 진행축과 `y=-0.5` 보행자 crossing 구간이 함께 보이는 구도 |
+| cart 시작 대기 | 먼 첫 waypoint `(0.9,-5.0)`에서 10초간 정지한 뒤 20 Hz로 왕복 |
 | 렌더링 선택 | CPU, `/dev/dri`, NVIDIA overlay 모두 `avoidance`에 전달 |
 
 ## Why?
@@ -43,7 +44,7 @@ AWS Small Warehouse의 ROS 2 world를 Gazebo Harmonic에서 여는 이식본을 
 | NVIDIA overlay가 `avoidance`에 미적용 | 새 service가 overlay에 없음 | DRI/NVIDIA compose 파일에 service 추가 |
 | GUI가 열리자마자 robot 이동 | controller node를 world와 동시 시작 | `TimerAction`으로 기본 10초 지연 |
 | 초기 화면에 moving cart가 안 보임 | 제거된 `GzScene3D` compatibility plugin은 `camera_pose`를 보장하지 않음 | Harmonic의 `MinimalScene.camera_pose`와 `GzSceneManager` 사용 |
-| 대기 중 cart가 미리 노출됨 | 첫 waypoint에서 10초간 정지 | camera 밖 staging 좌표에서 기다리고 이동 시작 순간 통로에 진입 |
+| cart가 robot camera에 갑자기 나타남 | camera 밖 `(-50,-50)`에서 첫 waypoint로 순간이동 | 통로의 먼 지점 `(0.9,-5.0)`에서 생성하고 연속 이동 |
 | moving cart가 파란 box로만 보임 | 동작 검증용 기본 box visual 사용 | warehouse fork의 pallet jack visual mesh 연결 |
 | 상세 collision mesh 사용 시 cart가 바닥 아래로 내려감 | 정적 asset용 non-convex mesh를 동적 model collision에 사용 | pallet jack 전체 범위를 감싸는 단순 box collision 사용 |
 | pose command 이동 중 cart 높이가 내려감 | 경로 pose와 중력이 동시에 적용 | kinematic obstacle link의 gravity 비활성화 |
@@ -68,15 +69,16 @@ forks/turtlebot3_simulations/turtlebot3_gazebo/
 ├── src/warehouse_obstacle.cpp
 ├── models/warehouse_obstacles/
 │   ├── static_box/
-│   └── moving_cart/
-│       └── casual_female/  # 원본 CC0 asset과 SOURCE.md
+│   ├── moving_cart/
+│   │   └── casual_female/
+│   └── moving_people/  # 사람 5종과 SOURCE.md
 ├── launch/turtlebot3_avoidance.launch.py
 └── launch/turtlebot3_world.launch.py
 
 code/scripts/generate-scaled-tb3.py
 ```
 
-`small_warehouse_harmonic.world`의 GUI camera는 `(x,y,z)=(-3.0,-5.0,3.0) m`, yaw `1.107 rad`, pitch `0.490 rad`에서 robot과 cart 통로를 함께 본다. 이것은 robot sensor camera가 아니라 **Gazebo 작업 화면의 초기 시점**만 변경한다. Cart는 camera 밖 `(-50,-50)`에 생성되어 10초간 기다린 뒤, plugin이 첫 waypoint `(0.9,-1.3)`로 옮기는 순간부터 화면에 나타난다.
+`small_warehouse_harmonic.world`의 GUI camera는 `(x,y,z)=(-4.5,-0.5,2.8) m`, yaw `0 rad`, pitch `0.35 rad`에서 robot 진행축과 보행자 crossing 구간을 함께 본다. 이것은 robot sensor camera가 아니라 **Gazebo 작업 화면의 초기 시점**만 변경한다. 사람은 첫 waypoint `y=-5.0 m`에서 출발해 +y로 접근하므로 생성 직후가 아니라 약 20초 뒤 crossing 구간에 들어온다.
 
 ## 핵심 코드
 
@@ -85,9 +87,10 @@ code/scripts/generate-scaled-tb3.py
 | `forks/turtlebot3_simulations/turtlebot3_gazebo/src/warehouse_obstacle.cpp` | [WarehouseObstaclePlugin::Configure()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/src/warehouse_obstacle.cpp#L18) | 이전: plugin 설정 없음<br>변경: speed·waypoint를 읽고 path 검증<br>효과: 잘못된 이동 경로 거부 |
 | `forks/turtlebot3_simulations/turtlebot3_gazebo/src/warehouse_obstacle.cpp` | [WarehouseObstaclePlugin::PreUpdate()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/src/warehouse_obstacle.cpp#L56) | 10초 대기 후 20 Hz 이동, segment 방향 yaw 적용 |
 | `forks/turtlebot3_simulations/turtlebot3_gazebo/models/warehouse_obstacles/moving_cart/model.sdf` | [cart와 operator visual](../../forks/turtlebot3_simulations/turtlebot3_gazebo/models/warehouse_obstacles/moving_cart/model.sdf) | 이전: pallet jack만 표시<br>변경: CC0 사람 visual·collision을 같은 link에 결합<br>효과: 사람과 cart가 벌어지지 않고 함께 이동 |
-| `forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_avoidance.launch.py` | [launch_setup()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_avoidance.launch.py#L28) | 이전: cart가 첫 waypoint에서 대기하며 camera에 노출<br>변경: obstacle은 8초에 `(-50,-50)`에 생성, controller는 `controller_delay` 후 생성<br>효과: cart가 이동을 시작하기 전에는 camera에 나타나지 않음 |
+| `forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_avoidance.launch.py` | [launch_setup()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_avoidance.launch.py#L28) | 이전: `(-50,-50)`에서 통로로 순간이동<br>변경: obstacle을 첫 waypoint `(0.9,-5.0)`에 생성<br>효과: robot sensor가 먼 접근부터 연속 관측 가능 |
+| 같은 파일 | [select_people()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_avoidance.launch.py) | `pedestrian_count=2~5`를 검사하고 seed 기반으로 서로 다른 사람 asset 선택 |
 | `forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py` | [generate_launch_description()](../../forks/turtlebot3_simulations/turtlebot3_gazebo/launch/turtlebot3_world.launch.py#L35) | 이전: package world만 선택<br>변경: `world_dir/world` 인자 수용<br>효과: AWS warehouse 경로 실행 |
-| `forks/aws-robomaker-small-warehouse-world/worlds/small_warehouse/small_warehouse_harmonic.world` | [MinimalScene.camera_pose](../../forks/aws-robomaker-small-warehouse-world/worlds/small_warehouse/small_warehouse_harmonic.world#L258) | 이전: 제거된 `GzScene3D` 사용<br>변경: Harmonic의 `MinimalScene`에서 moving cart 첫 waypoint를 향한 camera pose 설정<br>효과: compatibility 변환 없이 초기 시점 적용 |
+| `forks/aws-robomaker-small-warehouse-world/worlds/small_warehouse/small_warehouse_harmonic.world` | [MinimalScene.camera_pose](../../forks/aws-robomaker-small-warehouse-world/worlds/small_warehouse/small_warehouse_harmonic.world#L258) | 이전: 출발점 `y=-5.0` 중심 시점<br>변경: robot 진행축과 `y=-0.5` crossing 구간 중심 시점<br>효과: 움직이는 사람과 robot을 같은 GUI 화면에서 확인 |
 | `docker/compose.yaml` | [services.avoidance](../../docker/compose.yaml#L58) | 이전: 지연 값 전달 없음<br>변경: `AVOIDANCE_START_DELAY` 전달<br>효과: Compose에서 대기 시간 조정 |
 | `code/scripts/generate-scaled-tb3.py` | [main()](../../code/scripts/generate-scaled-tb3.py) | `waffle_pi_3d`의 SDF·URDF를 3배 변환하고 large bridge 설정 복사 |
 
@@ -132,6 +135,7 @@ model_.SetWorldPoseCmd(
 | `static` | 정면 x=1.2 m의 box | 정지거리와 좌·우 회전 확인 |
 | `crossing` | 사람+cart가 x=0.9 m의 초록 통로를 +y로 이동 | 약 20초에 robot 진행선과 교차하는 하나의 운반 조합 회피 |
 | `mixed` | y=0.45 m box + 왕복 cart | 부분 폐색과 동적 교차 동시 확인 |
+| `multi_person` | 서로 다른 사람 2~5명이 0.90 m 간격의 x=-0.30~3.30 m lane을 +y로 이동 | 충돌 없이 다중 detection, association, tracking ID 유지 확인 |
 
 이동 cart의 SDF 값은 다음과 같다.
 
@@ -157,14 +161,14 @@ model_.SetWorldPoseCmd(
 </visual>
 <speed>0.35</speed>
 <start_delay>10.0</start_delay>
-<waypoint>0.9 -1.3 0.023</waypoint>
+<waypoint>0.9 -5.0 0.023</waypoint>
 <waypoint>0.9 2.5 0.023</waypoint>
-<waypoint>0.9 -1.3 0.023</waypoint>
+<waypoint>0.9 -5.0 0.023</waypoint>
 ```
 
 사람은 독립된 pedestrian entity가 아니다. 사람 mesh와 cart mesh가 **같은 `link`에 속하므로 하나의 pose를 공유하며 항상 함께 이동한다.** `crossing`은 이 결합 model 전체가 robot 진행선을 가로지르는 scenario 이름이다.
 
-Cart entity는 launch 약 8초에 camera 밖 `(-50,-50)`에 생성된다. SDF의 `start_delay=10.0`이 끝나는 약 18초에 plugin이 첫 waypoint `(0.9,-1.3)`로 옮기고 곧바로 +y 이동을 시작한다. `y=-1.3 → -0.5 m`를 `0.35 m/s`로 이동하므로 robot 진행선 도착은 약 20.3초다. `crossing` controller는 약 10초에 출발해 `x=-2.0 → 0.9 m`를 `0.25 m/s`로 접근한다.
+Cart entity는 launch 약 8초에 첫 waypoint `(0.9,-5.0)`에 생성된다. SDF의 `start_delay=10.0`이 끝나는 약 18초부터 +y 이동을 시작한다. `y=-5.0 → -0.5 m`를 `0.35 m/s`로 이동하므로 robot 진행선 도착은 약 30.9초다. `crossing` controller는 약 10초에 출발해 `x=-2.0 → 0.9 m`를 `0.14 m/s`로 접근하므로 중심 교차 예상 시각은 약 30.7초다.
 
 `model://` 뒤 이름은 `GZ_SIM_RESOURCE_PATH`에 등록된 model directory에서 찾는다. Compose는 `/opt/aws_warehouse/models`를 이미 등록하므로 host 절대경로를 SDF에 넣지 않는다. `z=0.023 m`는 원본 warehouse world의 pallet jack 배치 높이와 같다. Collision은 visual의 약 `1.16 × 0.54 × 0.96 m` 범위를 감싸는 box다. 상세 mesh는 외형에만 사용한다. 이 cart는 충돌 힘으로 움직이는 물체가 아니라 plugin이 경로 pose를 지정하는 장애물이므로 link의 gravity를 끈다.
 
@@ -177,6 +181,7 @@ Cart entity는 launch 약 8초에 camera 밖 `(-50,-50)`에 생성된다. SDF의
 | moving cart SDF·plugin | Apache-2.0 package 내부 | 이동 logic과 SDF 변경 파일의 license 유지 |
 | pallet jack visual DAE·texture | AWS warehouse의 MIT-0 | asset을 복사하지 않고 AWS fork의 원본 경로를 참조하며 `LICENSE` 보존 |
 | 사람 visual DAE·texture | OpenRobotics `Casual female` v4, CC0-1.0 | 원본 전체와 [`SOURCE.md`](../../forks/turtlebot3_simulations/turtlebot3_gazebo/models/warehouse_obstacles/moving_cart/casual_female/SOURCE.md) 보존 |
+| 다인 사람 OBJ·texture | OpenRobotics `FemaleVisitor`, `MaleVisitorOnPhone`, `Nurse`, `Scrubs` v2, CC-BY-4.0 | 저자 정보와 [`moving_people/SOURCE.md`](../../forks/turtlebot3_simulations/turtlebot3_gazebo/models/warehouse_obstacles/moving_people/SOURCE.md) 보존·표시 |
 
 MIT-0 asset 수정·재배포는 가능하다. 다만 원본 저작권·license 파일을 지우거나, Harmonic 이식본을 원본 그대로라고 표시하면 안 된다.
 
@@ -193,7 +198,7 @@ MIT-0 asset 수정·재배포는 가능하다. 다만 원본 저작권·license 
 
 근거: [Fab Standard License](https://www.fab.com/eula?lang=en)는 호환 tool 사용을 허용하지만 asset의 standalone 재배포를 금지한다. [Unity Asset Store Terms](https://unity.com/legal/as-terms)도 일반 asset을 제품에 포함하는 사용과 asset 자체 재배포를 구분하며, provider별 제한이 추가될 수 있다.
 
-Fuel에서 작업복 착용 사람을 검색했지만 목적에 맞고 license가 명확한 model을 찾지 못했다. 따라서 사용자가 제시한 [OpenRobotics Casual female](https://app.gazebosim.org/OpenRobotics/fuel/models/Casual%20female) v4를 사용했다. Fuel metadata의 license는 CC0-1.0이며 archive SHA-256은 `e03944df8f010c7d6cf85fe61b2a9bf2899eed971e73fb76461f4705edeffe5d`다.
+단일 cart operator에는 [OpenRobotics Casual female](https://app.gazebosim.org/OpenRobotics/fuel/models/Casual%20female) v4(CC0-1.0)를 사용한다. `multi_person`에는 Casual female과 의료·방문객 복장의 Fuel asset 4종을 함께 사용한다. 후자 4종은 CC-BY-4.0이므로 원본 저자와 링크를 `moving_people/SOURCE.md`에 유지한다.
 
 이 DAE에는 보행 skeleton이 없다. 별도 Gazebo actor로 만들면 `Mesh skeleton ... not found`가 발생한다. 현재 구현은 사람 visual·단순 box collision을 pallet-jack link에 고정해 **손잡이 위치에서 함께 이동**시킨다. 실제 보행 관절·손 접촉 animation은 아니다.
 
@@ -277,9 +282,12 @@ NVIDIA GPU 사용:
 | `TURTLEBOT3_MODEL` | `burger`, `burger_cam`, `waffle`, `waffle_pi`, `waffle_pi_3d`, `waffle_pi_3d_large` | Calibration은 원본 3D, warehouse 가시성은 large 선택 |
 | `TURTLEBOT3_WORLD_DIR` | container 안의 world directory | package 밖 AWS warehouse world 선택 |
 | `TURTLEBOT3_WORLD` | directory 안의 `.world` 파일명 | 실행할 world 결정 |
-| `AVOIDANCE_SCENARIO` | `static`, `crossing`, `mixed` | box, moving cart, 두 장애물 동시 생성 중 선택 |
+| `AVOIDANCE_SCENARIO` | `static`, `crossing`, `mixed`, `multi_person` | 실행할 장애물 구성 선택 |
 | `AVOIDANCE_IMPLEMENTATION` | `python`, `cpp` | `/cmd_vel` controller 하나 선택 |
 | `AVOIDANCE_START_DELAY` | `0.0` 이상의 초 | robot controller 시작 지연. GUI·sensor 준비 시간 확보 |
+| `PEDESTRIAN_COUNT` | `2`~`5` | `multi_person`에 생성할 사람 수 |
+| `PEDESTRIAN_RANDOM_SEED` | 정수, 기본 `42` | 같은 seed에서 같은 asset 조합 재현 |
+| `PEDESTRIAN_PATH_MODE` | 현재 `crossing` | 다인 이동 경로 종류. 다른 값은 launch가 거부 |
 | `X_POSE`, `Y_POSE` | meter 실수 | robot의 world 초기 x·y 위치 |
 | `YAW` | radian 실수 | robot의 world 초기 진행 방향 |
 | `GAZEBO_GUI` | `true`, `false` | Gazebo 3D 창 표시 여부 |
@@ -309,6 +317,30 @@ docker compose \
   up --force-recreate avoidance
 ```
 
+다인 횡단 실행:
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin/docker
+
+TURTLEBOT3_MODEL=waffle_pi_3d_large \
+TURTLEBOT3_WORLD_DIR=/opt/aws_warehouse/worlds/small_warehouse \
+TURTLEBOT3_WORLD=small_warehouse_harmonic.world \
+AVOIDANCE_SCENARIO=multi_person \
+PEDESTRIAN_COUNT=5 \
+PEDESTRIAN_RANDOM_SEED=42 \
+PEDESTRIAN_PATH_MODE=crossing \
+AVOIDANCE_IMPLEMENTATION=cpp \
+AVOIDANCE_START_DELAY=10.0 \
+X_POSE=-2.0 Y_POSE=-0.5 YAW=0.0 \
+GAZEBO_GUI=true LAUNCH_RVIZ=true \
+docker compose \
+  -f compose.yaml \
+  -f compose.nvidia.yaml \
+  up --force-recreate avoidance
+```
+
+사람들은 asset별로 x=-0.30~3.30 m lane을 0.90 m 간격으로 사용하고, 속도=0.31~0.43 m/s, 시작 지연=9~13초를 사용한다. 0.90 m는 가장 넓은 0.76 m collision body보다 크므로 나란히 건널 때 서로 밀지 않는다. 같은 seed는 같은 사람 조합을 생성한다. 이동 plugin은 Gazebo simulation time을 쓰므로 host가 느려져도 경로 진행 기준은 유지된다.
+
 GPU 없이 headless CPU 검증:
 
 ```bash
@@ -333,8 +365,8 @@ docker compose up --force-recreate avoidance
 | model URI | Error Code 14 없음 |
 | isolated pallet jack preview | 빈 `empty.sdf`에 `preview_pallet_jack` entity 생성 성공 |
 | static obstacle | entity creation 성공 |
-| moving cart 생성 직후 | pose `(-50.0,-50.0,0.023) m`; camera 밖 staging 확인 |
-| moving cart delay 만료 후 | pose `(0.918,1.015,0.021) m`; 통로에서 +y 이동 확인 |
+| moving cart 생성 직후 | 재검증 필요: `(0.9,-5.0,0.023) m` 예상 |
+| moving cart delay 만료 후 | 재검증 필요: x≈`0.9 m`, y 증가 예상 |
 | `waffle_pi_3d` 정적 회피 | `scan_timeout → forward → turn_left → forward` |
 
 cart pose 확인:
@@ -347,24 +379,24 @@ docker compose exec avoidance bash -lc '
 '
 ```
 
-`AVOIDANCE_START_DELAY`는 robot controller만 늦춘다. 사람+cart는 별도로 camera 밖에 생성된 뒤 `moving_cart/model.sdf`의 `start_delay`만큼 기다린다.
+`AVOIDANCE_START_DELAY`는 robot controller만 늦춘다. 사람+cart는 먼 첫 waypoint에 생성된 뒤 `moving_cart/model.sdf`의 `start_delay`만큼 기다린다.
 
 2026-08-25 headless 검증에서 `AVOIDANCE_START_DELAY=6.0`으로 실행했다. delay 만료 전에 `obstacle_avoidance_cpp` process가 없었고, 만료 후 process 생성과 `scan_timeout → forward` 로그를 확인했다.
 
 같은 날 pallet jack 적용 후 상세 collision mesh 사용 시 z가 내려가는 문제를 재현했다. 단순 box collision과 `gravity=false`로 수정한 뒤 당시 경로에서 `y=-1.0404 → -0.2102 m` 동안 `z=0.023 m`를 유지했고 asset 관련 Gazebo error가 없었다. 이후 가시 영역 경로로 옮기고 host GUI에서 texture와 구도를 직접 확인했다.
 
-2026-08-26 사람과 pallet-jack를 같은 link로 유지하면서 crossing 경로를 `(0.9,-1.3) → (0.9,2.5)`로 옮겼다. 둘은 camera 밖에서 10초 대기한 뒤 첫 waypoint에 나타나 사진의 초록 통로 방향인 +y로 함께 움직인다.
-
-같은 날 headless pose 검사에서 생성 직후 `(-50.0,-50.0,0.023) m`, delay 만료 후 `(0.918,1.015,0.021) m`를 확인했다. 첫 값은 camera 밖 staging, 두 번째 값은 통로의 +y 이동 구간이다. GUI pixel 검출이 아니라 Gazebo world pose로 검증한 결과다.
+2026-08-26 사람과 pallet-jack를 같은 link로 유지하면서 crossing 경로를 `(0.9,-5.0) → (0.9,2.5)`로 옮겼다. 둘은 먼 첫 waypoint에서 10초 대기한 뒤 사진의 초록 통로 방향인 +y로 함께 접근한다.
 
 같은 날 warehouse 전용 `waffle_pi_3d_large`를 3배로 생성해 다시 build했다. `/scan`, `/calib/points`, `/camera/image_raw`가 발행됐고 `base_link → camera_rgb_optical_frame` translation은 원본의 3배인 `(0.228, 0.000, 0.279) m`였다. 즉 Gazebo geometry만 커진 것이 아니라 ROS TF도 같은 배율이다.
+
+2026-08-27 `multi_person`, count=5, seed=42 headless 실행에서 서로 다른 5개 entity가 모두 생성됐다. `MaleVisitorOnPhone` pose의 y가 `0.590 → -0.934 m`로 변해 왕복 plugin 동작도 확인했다. Asset URI error는 없었다.
 
 ## 추가 구현하면 좋은 것
 
 | 우선순위 | 항목 | 추가 시점 |
 |---|---|---|
 | 높음 | contact sensor 또는 collision count 자동 판정 | 회피 성공을 로그가 아닌 수치로 CI 검사할 때 |
-| 높음 | episode reset와 random seed | PATCH-10 dataset을 반복 수집할 때 |
+| 높음 | episode reset와 random seed | PATCH-16 dataset을 반복 수집할 때 |
 | 중간 | 보행 skeleton이 있는 사람 actor | 발걸음·손 접촉 animation까지 평가할 때 |
 | 중간 | warehouse map/SLAM 정합 | 목표점 주행과 Nav2를 추가할 때 |
 
@@ -373,11 +405,12 @@ docker compose exec avoidance bash -lc '
 ## 완료 조건
 
 - `colcon build --packages-select turtlebot3_gazebo` 성공
-- 세 scenario 값이 잘못되면 launch가 즉시 오류 출력
+- 네 scenario 값이 잘못되면 launch가 즉시 오류 출력
 - static/moving entity creation 성공
 - cart pose가 simulation time에 따라 변함
 - cart 이동 중 z가 `0.023 m`로 유지
 - `/scan`이 유한 거리를 포함하고 controller가 회전 mode에 진입
 - delay 만료 전에 controller process가 없고, 만료 후에만 생성
-- `crossing` 또는 `mixed` 실행 시 이동 전 사람+cart가 camera에 보이지 않음
-- delay 만료 후 첫 waypoint에 나타나 사람+cart가 함께 +y로 이동
+- `crossing` 또는 `mixed` 실행 시 사람+cart가 `(0.9,-5.0)`에서 생성
+- delay 만료 후 순간이동 없이 사람+cart가 함께 +y로 이동
+- `multi_person`에서 count=2~5만 허용하고 같은 seed가 같은 asset 조합 생성

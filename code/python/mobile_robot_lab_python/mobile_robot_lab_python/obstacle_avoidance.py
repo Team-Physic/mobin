@@ -78,10 +78,16 @@ class AvoidancePolicy:
             self.avoiding = True
             return 0.0, 0.0, 'invalid_scan'
 
-        if distances.front <= self.stop_distance and not self.avoiding:
+        hazard_distance = distances.front
+        if self.preferred_turn_direction == 'left':
+            hazard_distance = min(hazard_distance, distances.left)
+        elif self.preferred_turn_direction == 'right':
+            hazard_distance = min(hazard_distance, distances.right)
+
+        if hazard_distance <= self.stop_distance and not self.avoiding:
             self.avoiding = True
             self.turn_direction = self.choose_turn_direction(distances)
-        elif self.avoiding and distances.front >= self.clear_distance:
+        elif self.avoiding and hazard_distance >= self.clear_distance:
             self.avoiding = False
             self.turn_direction = None
 
