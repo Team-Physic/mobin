@@ -180,6 +180,7 @@ CMD ["bash"]
 | `sim` | 정해진 launch 명령을 자동 실행하는 방식 | Gazebo와 TurtleBot3 world 시작 |
 | bind mount | host 폴더를 container 안에서 그대로 보는 연결 | 로컬 TurtleBot3 source 공유 |
 | named volume | 여러 container가 함께 사용하는 Docker 저장 공간 | `build`, `install`, `log` 결과 공유 |
+| `ipc: host` | container들이 host의 shared-memory 공간을 함께 사용 | Fast DDS로 큰 image·point cloud 전달 |
 
 먼저 `shell`에서 build하면 `sim`이 공유 volume의 `/ws/install`을 읽어 실행한다.
 
@@ -197,6 +198,7 @@ x-tb3-common: &tb3-common
       TB3_SIM_COMMIT: ${TB3_SIM_COMMIT:-unknown}
       CALIB_COMMIT: ${CALIB_COMMIT:-unknown}
   network_mode: host
+  ipc: host
   environment:
     DISPLAY: ${DISPLAY}
     QT_X11_NO_MITSHM: "1"
