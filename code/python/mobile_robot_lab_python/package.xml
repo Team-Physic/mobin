@@ -8,10 +8,12 @@
 
   <buildtool_depend>ament_python</buildtool_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>message_filters</exec_depend>
   <exec_depend>mobile_robot_lab_cpp</exec_depend>
   <exec_depend>mobile_robot_lab_msgs</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
   <exec_depend>python3-scipy</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>rclpy</exec_depend>

@@ -10,10 +10,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(mobile_robot_lab_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -39,10 +41,21 @@ ament_target_dependencies(
   person_tracker_cpp geometry_msgs mobile_robot_lab_msgs rclcpp vision_msgs
   std_msgs visualization_msgs)
 
+add_executable(semantic_safety_cpp src/semantic_safety_node.cpp)
+target_include_directories(semantic_safety_cpp PRIVATE include)
+ament_target_dependencies(
+  semantic_safety_cpp diagnostic_msgs geometry_msgs mobile_robot_lab_msgs
+  nav_msgs rclcpp sensor_msgs visualization_msgs)
+
+add_executable(cmd_vel_watchdog_cpp src/cmd_vel_watchdog_node.cpp)
+ament_target_dependencies(cmd_vel_watchdog_cpp geometry_msgs rclcpp)
+
 install(TARGETS
   obstacle_avoidance_cpp
   lidar_bbox_association_cpp
   person_tracker_cpp
+  semantic_safety_cpp
+  cmd_vel_watchdog_cpp
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include/)
 
@@ -61,6 +74,10 @@ if(BUILD_TESTING)
   target_include_directories(
     constant_velocity_tracker_test PRIVATE include ${EIGEN3_INCLUDE_DIRS})
   add_test(NAME constant_velocity_tracker_test COMMAND constant_velocity_tracker_test)
+
+  add_executable(semantic_safety_test test/semantic_safety_test.cpp)
+  target_include_directories(semantic_safety_test PRIVATE include)
+  add_test(NAME semantic_safety_test COMMAND semantic_safety_test)
 
 endif()
 

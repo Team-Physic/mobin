@@ -90,7 +90,7 @@ git -C forks/aws-robomaker-small-warehouse-world \
 
 ## 창고 장애물 회피 실행
 
-PATCH-05/06 구현은 `avoidance` service 하나로 world, robot, obstacle, 선택한 controller를 실행한다. 현재 controller는 `/scan` 거리만 사용하는 반응형 회피다. `lidar_bbox_association` node는 기존 YOLO의 `vision_msgs/Detection2DArray`와 `/calib/points`를 연결해 `/fusion/associated_points`, `/fusion/detections_3d`를 발행한다. 이 semantic 결과는 아직 `/cmd_vel` 판단에는 연결하지 않는다.
+PATCH-05/06 구현은 `avoidance` service 하나로 world, robot, obstacle, 선택한 controller를 실행한다. 현재 controller는 `/scan` 거리만 사용하는 반응형 회피다. 별도 `perception` service는 YOLO-World `person` bbox와 `/calib/points`를 연결하고, `odom` 기준 Hungarian tracking 결과를 `/fusion/associated_points`, `/fusion/detections_3d`, `/tracking/persons`, `/tracking/markers`로 발행한다. PATCH-08의 `patrol` service는 `/tracking/persons`와 LiDAR emergency distance로 `/cmd_vel_mux`를 감속·정지하고, watchdog을 거쳐 `/cmd_vel`을 발행한다.
 
 ```bash
 cd /home/swlinux/Desktop/workspace/mobin/docker
@@ -109,7 +109,19 @@ docker compose \
   up --force-recreate avoidance
 ```
 
-`waffle_pi_3d_large`는 warehouse 가시성을 위한 3배 model이다. Calibration 기준 크기는 원본 `waffle_pi_3d`를 사용한다. `crossing`의 사람과 pallet jack는 같은 model link에 속해 하나의 pose로 항상 함께 이동한다. 이동 전에는 camera 밖 staging 좌표에 있고, 출발 순간 초록 통로에 나타나 +y 방향으로 robot 진행선과 교차한다. Scenario 전용 robot 속도는 `0.25 m/s`다. 오른쪽 sector가 점유된 동안 정지하고, 사람+cart가 통과하면 오른쪽으로 회피한다. 전체 parameter·license·검증은 [PATCH-05](patch/simulation/PATCH-05-obstacle-scenarios.md)와 [PATCH-06](patch/simulation/PATCH-06-obstacle-avoidance.md)을 따른다.
+`waffle_pi_3d_large`는 warehouse 가시성을 위한 3배 model이다. Calibration 기준 크기는 원본 `waffle_pi_3d`를 사용한다. `crossing`의 사람과 pallet jack는 같은 model link에 속해 하나의 pose로 항상 함께 이동한다. 사람+cart는 통로의 먼 지점 `(0.9,-5.0)`에서 출발해 +y 방향으로 접근하므로 robot camera에 갑자기 나타나지 않는다. Scenario 전용 robot 속도는 `0.14 m/s`, 오른쪽 LiDAR sector 범위는 `15~85°`다. 오른쪽 sector가 점유된 동안 정지하고, 사람+cart가 통과하면 오른쪽으로 회피한다. 전체 parameter·license·검증은 [PATCH-05](patch/simulation/PATCH-05-obstacle-scenarios.md)와 [PATCH-06](patch/simulation/PATCH-06-obstacle-avoidance.md)을 따른다.
+
+다인 검증은 `AVOIDANCE_SCENARIO=multi_person`, `PEDESTRIAN_COUNT=2~5`, `PEDESTRIAN_RANDOM_SEED=42`, `PEDESTRIAN_PATH_MODE=random_walk`을 위 명령에 추가한다. 고정 `crossing`은 사람+cart 회귀시험에만 유지한다. 전체 Nav2 patrol·tracking·semantic safety 실행은 [PATCH-08](patch/simulation/PATCH-08-warehouse-patrol-semantic-safety.md)을 따른다. Simulation이 실행된 상태에서 GPU perception을 별도 terminal에 시작한다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin/docker
+YOLO_DEVICE=0 docker compose \
+  -f compose.yaml \
+  -f compose.nvidia.yaml \
+  up --force-recreate perception
+```
+
+Gazebo를 재시작하면 simulation clock도 0으로 돌아간다. 기존 TF 시간을 남기지 않도록 `perception`도 위 명령의 `--force-recreate`로 다시 시작한다.
 
 ## TODO
 
@@ -124,12 +136,14 @@ docker compose \
 5. [ ] [PATCH-04: URDF 반영과 정량 검증](patch/simulation/PATCH-04-apply-and-verify.md)
 6. [O] [PATCH-05: AWS Warehouse의 Gazebo Harmonic 이식](patch/simulation/PATCH-05-obstacle-scenarios.md)
 7. [O] [PATCH-06: 장애물 회피 node](patch/simulation/PATCH-06-obstacle-avoidance.md)
-8. [ ] [PATCH-07: 저조도 터널 calibration 강건성](patch/simulation/PATCH-07-low-light-tunnel-robustness.md)
-9. [ ] [PATCH-08: Behavior Tree calibration workflow](patch/simulation/PATCH-08-behavior-tree-calibration-orchestration.md)
-10. [ ] [PATCH-09: GitHub Actions CI/CD](patch/simulation/PATCH-09-github-actions-ci-cd.md)
-11. [ ] [PATCH-10: Sim2Real dataset과 domain randomization](patch/simulation/PATCH-10-sim2real-dataset-collection.md)
-12. [ ] [PATCH-11: Mobile Robot 강화학습](patch/simulation/PATCH-11-mobile-robot-reinforcement-learning.md)
-13. [ ] [PATCH-12: Humanoid Isaac Lab Sim2Real](patch/simulation/PATCH-12-humanoid-isaac-lab-sim2real.md)
+8. [ ] [PATCH-07: Person LiDAR–BBox Association과 Tracking](patch/simulation/PATCH-07-lidar-association-and-tracking.md)
+9. [ ] [PATCH-08: Warehouse Patrol과 Semantic Safety](patch/simulation/PATCH-08-warehouse-patrol-semantic-safety.md)
+10. [ ] [PATCH-15: GitHub Actions CI/CD](patch/simulation/PATCH-15-github-actions-ci-cd.md)
+11. [ ] [PATCH-16: Sim2Real dataset과 domain randomization](patch/simulation/PATCH-16-sim2real-dataset-collection.md)
+12. [ ] [PATCH-17: 저조도 터널 calibration 강건성](patch/simulation/PATCH-17-low-light-tunnel-robustness.md)
+13. [ ] [PATCH-18: Behavior Tree calibration workflow](patch/simulation/PATCH-18-behavior-tree-calibration-orchestration.md)
+14. [ ] [PATCH-19: Mobile Robot 강화학습](patch/simulation/PATCH-19-mobile-robot-reinforcement-learning.md)
+15. [ ] [PATCH-20: Humanoid Isaac Lab Sim2Real](patch/simulation/PATCH-20-humanoid-isaac-lab-sim2real.md)
 
 ### Embedded
 

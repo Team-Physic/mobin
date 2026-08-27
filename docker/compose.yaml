@@ -9,6 +9,7 @@ x-tb3-common: &tb3-common
       TB3_SIM_COMMIT: ${TB3_SIM_COMMIT:-unknown}
       CALIB_COMMIT: ${CALIB_COMMIT:-unknown}
   network_mode: host
+  ipc: host
   environment:
     DISPLAY: ${DISPLAY}
     QT_X11_NO_MITSHM: "1"
@@ -21,6 +22,24 @@ x-tb3-common: &tb3-common
     AVOIDANCE_SCENARIO: ${AVOIDANCE_SCENARIO:-static}
     AVOIDANCE_IMPLEMENTATION: ${AVOIDANCE_IMPLEMENTATION:-cpp}
     AVOIDANCE_START_DELAY: ${AVOIDANCE_START_DELAY:-10.0}
+    PEDESTRIAN_COUNT: ${PEDESTRIAN_COUNT:-2}
+    PEDESTRIAN_RANDOM_SEED: ${PEDESTRIAN_RANDOM_SEED:-42}
+    PEDESTRIAN_PATH_MODE: ${PEDESTRIAN_PATH_MODE:-random_walk}
+    PEDESTRIAN_MIN_SPEED: ${PEDESTRIAN_MIN_SPEED:-0.5}
+    PEDESTRIAN_MAX_SPEED: ${PEDESTRIAN_MAX_SPEED:-1.4}
+    PEDESTRIAN_MIN_SPACING: ${PEDESTRIAN_MIN_SPACING:-1.5}
+    PEDESTRIAN_GRAPH_FILE: ${PEDESTRIAN_GRAPH_FILE:-/ws/install/turtlebot3_gazebo/share/turtlebot3_gazebo/params/warehouse_aisle_graph.yaml}
+    YOLO_DEVICE: ${YOLO_DEVICE:-cpu}
+    YOLO_TARGET_CLASS: ${YOLO_TARGET_CLASS:-person}
+    YOLO_CONFIDENCE: ${YOLO_CONFIDENCE:-0.05}
+    EVALUATION_OUTPUT_PATH: ${EVALUATION_OUTPUT_PATH:-/ws/data/results/tracking_metrics.json}
+    WAREHOUSE_SCENARIO: ${WAREHOUSE_SCENARIO:-multi_person}
+    SLAM: ${SLAM:-false}
+    RUN_PATROL: ${RUN_PATROL:-true}
+    RUN_EVALUATOR: ${RUN_EVALUATOR:-true}
+    RUN_PERCEPTION: ${RUN_PERCEPTION:-true}
+    RUN_SAFETY: ${RUN_SAFETY:-true}
+    NAV2_MAP: ${NAV2_MAP:-/ws/data/maps/small_warehouse.yaml}
     GZ_IP: ${GZ_IP:-127.0.0.1}
     GZ_SIM_RESOURCE_PATH: /opt/aws_warehouse:/opt/aws_warehouse/models
     X_POSE: ${X_POSE:--2.0}
@@ -31,11 +50,14 @@ x-tb3-common: &tb3-common
     - ../forks/aws-robomaker-small-warehouse-world:/opt/aws_warehouse:ro
     - ../code/python:/ws/src/python:rw
     - ../code/cpp:/ws/src/cpp:rw
+    - ../code/scripts:/ws/scripts:ro
     - tb3_build:/ws/build
     - tb3_install:/ws/install
     - tb3_log:/ws/log
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
     - ../data:/ws/data:rw
+    - ../model:/ws/model:ro
+    - yolo_clip_cache:/root/.cache/clip
 
 services:
   shell:
@@ -63,10 +85,33 @@ services:
         test -f /ws/install/setup.bash ||
           { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
         source /ws/install/setup.bash &&
-        exec ros2 launch turtlebot3_gazebo turtlebot3_avoidance.launch.py world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} scenario:=$${AVOIDANCE_SCENARIO} implementation:=$${AVOIDANCE_IMPLEMENTATION} controller_delay:=$${AVOIDANCE_START_DELAY} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+        exec ros2 launch turtlebot3_gazebo turtlebot3_avoidance.launch.py world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} scenario:=$${AVOIDANCE_SCENARIO} implementation:=$${AVOIDANCE_IMPLEMENTATION} controller_delay:=$${AVOIDANCE_START_DELAY} pedestrian_count:=$${PEDESTRIAN_COUNT} pedestrian_random_seed:=$${PEDESTRIAN_RANDOM_SEED} pedestrian_path_mode:=$${PEDESTRIAN_PATH_MODE} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+      "
+
+  perception:
+    <<: *tb3-common
+    command: >
+      bash -lc "
+        source /opt/ros/jazzy/setup.bash &&
+        test -f /ws/install/setup.bash ||
+          { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
+        source /ws/install/setup.bash &&
+        exec ros2 launch mobile_robot_lab_python yolo_lidar_fusion.launch.py model_path:=/ws/model/yolo-world/yolov8s-worldv2.pt device:=$${YOLO_DEVICE} target_class:=$${YOLO_TARGET_CLASS} confidence:=$${YOLO_CONFIDENCE}
+      "
+
+  patrol:
+    <<: *tb3-common
+    command: >
+      bash -lc "
+        source /opt/ros/jazzy/setup.bash &&
+        test -f /ws/install/setup.bash ||
+          { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
+        source /ws/install/setup.bash &&
+        exec ros2 launch mobile_robot_lab_python warehouse_patrol.launch.py scenario:=$${WAREHOUSE_SCENARIO} slam:=$${SLAM} map:=$${NAV2_MAP} run_patrol:=$${RUN_PATROL} run_evaluator:=$${RUN_EVALUATOR} run_perception:=$${RUN_PERCEPTION} run_safety:=$${RUN_SAFETY} pedestrian_count:=$${PEDESTRIAN_COUNT} pedestrian_seed:=$${PEDESTRIAN_RANDOM_SEED} model_path:=/ws/model/yolo-world/yolov8s-worldv2.pt device:=$${YOLO_DEVICE} evaluation_output_path:=$${EVALUATION_OUTPUT_PATH} world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
       "
 
 volumes:
   tb3_build:
   tb3_install:
   tb3_log:
+  yolo_clip_cache:

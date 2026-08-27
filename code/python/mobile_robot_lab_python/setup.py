@@ -35,6 +35,8 @@ setup(
             'mobile_robot_lab_python.lidar_bbox_association_node:main',
             'yolo_world_detector = '
             'mobile_robot_lab_python.yolo_world_detector_node:main',
+            'warehouse_patrol = '
+            'mobile_robot_lab_python.warehouse_patrol_node:main',
             'tracking_evaluator = '
             'mobile_robot_lab_python.tracking_evaluator_node:main',
         ],
