@@ -7,6 +7,9 @@ import math
 
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import Point
+from message_filters import ApproximateTimeSynchronizer
+from message_filters import Subscriber
 import rclpy
 from rclpy.duration import Duration
 from rclpy.executors import ExternalShutdownException
@@ -20,11 +23,15 @@ from tf2_ros import Buffer
 from tf2_ros import TransformException
 from tf2_ros import TransformListener
 from vision_msgs.msg import Detection2DArray
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
 
 from mobile_robot_lab_python.camera_lidar_fusion import associate_bbox
 from mobile_robot_lab_python.camera_lidar_fusion import BoundingBox
 from mobile_robot_lab_python.camera_lidar_fusion import Intrinsics
 from mobile_robot_lab_python.camera_lidar_fusion import Point3
+from mobile_robot_lab_python.camera_lidar_fusion import transform_point
+from mobile_robot_lab_python.person_tracker import PersonTracker
 
 
 def quaternion_rotation(quaternion):
@@ -52,54 +59,136 @@ def stamp_seconds(stamp):
     return stamp.sec + stamp.nanosec * 1e-9
 
 
+def transform_parts(transform):
+    vector = transform.transform.translation
+    return (
+        quaternion_rotation(transform.transform.rotation),
+        Point3(vector.x, vector.y, vector.z),
+    )
+
+
+def remove_ground(points, rotation, translation, minimum_height):
+    return [
+        point for point in points
+        if transform_point(point, rotation, translation).z > minimum_height
+    ]
+
+
+def track_markers(tracks, header):
+    markers = MarkerArray()
+    clear = Marker(header=header, action=Marker.DELETEALL)
+    markers.markers.append(clear)
+    for track in tracks:
+        position = Point(
+            x=track.position[0], y=track.position[1], z=track.position[2])
+
+        sphere = Marker(
+            header=header, ns='person_position', id=track.track_id,
+            type=Marker.SPHERE, action=Marker.ADD)
+        sphere.pose.position = position
+        sphere.pose.orientation.w = 1.0
+        sphere.scale.x = sphere.scale.y = sphere.scale.z = 0.25
+        sphere.color.r = 1.0
+        sphere.color.g = 0.2
+        sphere.color.a = 0.9
+        markers.markers.append(sphere)
+
+        label = Marker(
+            header=header, ns='person_id', id=track.track_id,
+            type=Marker.TEXT_VIEW_FACING, action=Marker.ADD)
+        label.pose.position = Point(
+            x=position.x, y=position.y, z=position.z + 0.35)
+        label.pose.orientation.w = 1.0
+        label.scale.z = 0.22
+        label.color.r = label.color.g = label.color.b = label.color.a = 1.0
+        label.text = f'person {track.track_id}'
+        markers.markers.append(label)
+
+        trajectory = Marker(
+            header=header, ns='person_trajectory', id=track.track_id,
+            type=Marker.LINE_STRIP, action=Marker.ADD)
+        trajectory.pose.orientation.w = 1.0
+        trajectory.scale.x = 0.05
+        trajectory.color.g = 1.0
+        trajectory.color.a = 0.9
+        trajectory.points = [Point(x=x, y=y, z=z) for x, y, z in track.trajectory]
+        markers.markers.append(trajectory)
+    return markers
+
+
 class LidarBboxAssociationNode(Node):
     def __init__(self):
         super().__init__('lidar_bbox_association')
         self.declare_parameter('points_topic', '/calib/points')
         self.declare_parameter('camera_info_topic', '/camera/camera_info')
         self.declare_parameter('detections_topic', '/detections')
-        self.declare_parameter('target_class', 'cart')
+        self.declare_parameter('target_class', 'person')
         self.declare_parameter('min_score', 0.5)
         self.declare_parameter('min_points', 3)
-        self.declare_parameter('max_time_delta', 0.1)
+        self.declare_parameter('max_time_delta', 0.05)
+        self.declare_parameter('sync_queue_size', 30)
+        self.declare_parameter('ground_frame', 'base_footprint')
+        self.declare_parameter('ground_height', 0.05)
+        self.declare_parameter('tracking_frame', 'odom')
+        self.declare_parameter('assignment_distance', 0.75)
+        self.declare_parameter('track_max_age', 1.0)
+        self.declare_parameter('trajectory_length', 50)
 
         self.target_class = self.get_parameter('target_class').value
         self.min_score = float(self.get_parameter('min_score').value)
         self.min_points = int(self.get_parameter('min_points').value)
         self.max_time_delta = float(self.get_parameter('max_time_delta').value)
-        if self.min_points < 1 or self.max_time_delta < 0.0:
+        self.sync_queue_size = int(
+            self.get_parameter('sync_queue_size').value)
+        self.ground_frame = self.get_parameter('ground_frame').value
+        self.ground_height = float(self.get_parameter('ground_height').value)
+        self.tracking_frame = self.get_parameter('tracking_frame').value
+        assignment_distance = float(
+            self.get_parameter('assignment_distance').value)
+        track_max_age = float(self.get_parameter('track_max_age').value)
+        trajectory_length = int(
+            self.get_parameter('trajectory_length').value)
+        if (self.min_points < 1 or self.max_time_delta < 0.0 or
+                self.sync_queue_size < 1):
             raise ValueError(
-                'min_points must be positive and max_time_delta non-negative')
+                'min_points and sync_queue_size must be positive; '
+                'max_time_delta must be non-negative')
+        self.tracker = PersonTracker(
+            assignment_distance, track_max_age, trajectory_length)
 
         self.camera_info = None
-        self.detections = None
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.create_subscription(
             CameraInfo, self.get_parameter('camera_info_topic').value,
             self.on_camera_info, qos_profile_sensor_data)
-        self.create_subscription(
-            Detection2DArray, self.get_parameter('detections_topic').value,
-            self.on_detections, qos_profile_sensor_data)
-        self.create_subscription(
-            PointCloud2, self.get_parameter('points_topic').value,
-            self.on_points, qos_profile_sensor_data)
+        self.detections_subscriber = Subscriber(
+            self, Detection2DArray,
+            self.get_parameter('detections_topic').value,
+            qos_profile=qos_profile_sensor_data)
+        self.points_subscriber = Subscriber(
+            self, PointCloud2, self.get_parameter('points_topic').value,
+            qos_profile=qos_profile_sensor_data)
+        self.synchronizer = ApproximateTimeSynchronizer(
+            [self.detections_subscriber, self.points_subscriber],
+            queue_size=self.sync_queue_size,
+            slop=self.max_time_delta)
+        self.synchronizer.registerCallback(self.on_detection_points)
         self.points_publisher = self.create_publisher(
             PointCloud2, '/fusion/associated_points', 10)
         self.pose_publisher = self.create_publisher(
             PoseArray, '/fusion/detections_3d', 10)
+        self.marker_publisher = self.create_publisher(
+            MarkerArray, '/fusion/tracks', 10)
 
     def on_camera_info(self, message):
         self.camera_info = message
 
-    def on_detections(self, message):
-        self.detections = message
-
-    def on_points(self, cloud):
-        if self.camera_info is None or self.detections is None:
+    def on_detection_points(self, detections, cloud):
+        if self.camera_info is None:
             return
         cloud_stamp = stamp_seconds(cloud.header.stamp)
-        detection_stamp = stamp_seconds(self.detections.header.stamp)
+        detection_stamp = stamp_seconds(detections.header.stamp)
         time_delta = abs(cloud_stamp - detection_stamp)
         if time_delta > self.max_time_delta:
             self.get_logger().warn(
@@ -109,32 +198,47 @@ class LidarBboxAssociationNode(Node):
 
         camera_frame = self.camera_info.header.frame_id
         try:
-            transform = self.tf_buffer.lookup_transform(
+            camera_transform = self.tf_buffer.lookup_transform(
                 camera_frame, cloud.header.frame_id,
+                Time.from_msg(cloud.header.stamp),
+                timeout=Duration(seconds=0.05))
+            ground_transform = self.tf_buffer.lookup_transform(
+                self.ground_frame, cloud.header.frame_id,
+                Time.from_msg(cloud.header.stamp),
+                timeout=Duration(seconds=0.05))
+            tracking_transform = self.tf_buffer.lookup_transform(
+                self.tracking_frame, cloud.header.frame_id,
                 Time.from_msg(cloud.header.stamp),
                 timeout=Duration(seconds=0.05))
         except TransformException as error:
             self.get_logger().warn(
-                f'TF {cloud.header.frame_id} -> {camera_frame} unavailable: '
+                f'TF from {cloud.header.frame_id} unavailable: '
                 f'{error}',
                 throttle_duration_sec=2.0)
             return
 
-        rotation = quaternion_rotation(transform.transform.rotation)
-        vector = transform.transform.translation
-        translation = Point3(vector.x, vector.y, vector.z)
+        rotation, translation = transform_parts(camera_transform)
+        ground_rotation, ground_translation = transform_parts(ground_transform)
+        tracking_rotation, tracking_translation = transform_parts(
+            tracking_transform)
         intrinsics = Intrinsics(
             self.camera_info.k[0], self.camera_info.k[4],
             self.camera_info.k[2], self.camera_info.k[5])
-        lidar_points = [
-            Point3(float(point[0]), float(point[1]), float(point[2]))
-            for point in point_cloud2.read_points(
+        raw_points = [
+            Point3(float(raw[0]), float(raw[1]), float(raw[2]))
+            for raw in point_cloud2.read_points(
                 cloud, field_names=('x', 'y', 'z'), skip_nans=True)
         ]
+        lidar_points = remove_ground(
+            raw_points, ground_rotation, ground_translation,
+            self.ground_height)
 
-        poses = PoseArray(header=cloud.header)
+        poses = PoseArray()
+        poses.header.stamp = cloud.header.stamp
+        poses.header.frame_id = self.tracking_frame
         associated_points = []
-        for detection in self.detections.detections:
+        tracking_positions = []
+        for detection in detections.detections:
             if not detection.results:
                 continue
             best = max(
@@ -157,12 +261,17 @@ class LidarBboxAssociationNode(Node):
             if association is None:
                 continue
 
+            tracking_position = transform_point(
+                association.position_lidar,
+                tracking_rotation, tracking_translation)
             pose = Pose()
-            pose.position.x = association.position_lidar.x
-            pose.position.y = association.position_lidar.y
-            pose.position.z = association.position_lidar.z
+            pose.position.x = tracking_position.x
+            pose.position.y = tracking_position.y
+            pose.position.z = tracking_position.z
             pose.orientation.w = 1.0
             poses.poses.append(pose)
+            tracking_positions.append((
+                tracking_position.x, tracking_position.y, tracking_position.z))
             associated_points.extend(
                 (point.x, point.y, point.z)
                 for point in association.matched_points_lidar)
@@ -174,6 +283,8 @@ class LidarBboxAssociationNode(Node):
         self.pose_publisher.publish(poses)
         self.points_publisher.publish(point_cloud2.create_cloud_xyz32(
             cloud.header, associated_points))
+        tracks = self.tracker.update(tracking_positions, cloud_stamp)
+        self.marker_publisher.publish(track_markers(tracks, poses.header))
 
 
 def main(args=None):

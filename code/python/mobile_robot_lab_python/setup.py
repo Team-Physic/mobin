@@ -1,3 +1,6 @@
+import os
+from glob import glob
+
 from setuptools import find_packages
 from setuptools import setup
 
@@ -12,6 +15,10 @@ setup(
         ('share/ament_index/resource_index/packages',
          ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'),
+         glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'maps'), glob('maps/*')),
     ],
     install_requires=['setuptools'],
     tests_require=['pytest'],
@@ -26,6 +33,10 @@ setup(
             'mobile_robot_lab_python.obstacle_avoidance:main',
             'lidar_bbox_association = '
             'mobile_robot_lab_python.lidar_bbox_association_node:main',
+            'yolo_world_detector = '
+            'mobile_robot_lab_python.yolo_world_detector_node:main',
+            'tracking_evaluator = '
+            'mobile_robot_lab_python.tracking_evaluator_node:main',
         ],
     },
 )

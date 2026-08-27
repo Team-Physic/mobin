@@ -8,5 +8,9 @@ __pycache__/
 # Generated bags, recordings, screenshots, and calibration outputs
 /data/
 
+# Downloaded AI weights and runtime model caches
+/model/**/*.pt
+/model/**/clip-cache/
+
 # Local Codex/Claude session-transfer metadata
 /.cct/
