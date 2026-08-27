@@ -1,4 +1,4 @@
-# Simulation PATCH-09: GitHub Actions CI/CD
+# Simulation PATCH-15: GitHub Actions CI/CD
 
 - 작성일: 2026-08-07
 - 브랜치: `feature/github-actions-ci-cd`
@@ -39,7 +39,7 @@
 #### 적용 후 구조
 
 ```text
-# proposed repository layout after Simulation PATCH-09
+# proposed repository layout after Simulation PATCH-15
 mobile-robot-calibration-repo/
 ├── .github/
 │   └── workflows/
@@ -51,7 +51,7 @@ mobile-robot-calibration-repo/
 │   ├── turtlebot3_simulations/
 │   └── direct_visual_lidar_calibration/
 └── patch/
-    └── Simulation PATCH-09-github-actions-ci-cd.md
+    └── Simulation PATCH-15-github-actions-ci-cd.md
 ```
 
 #### 전체 흐름

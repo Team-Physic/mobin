@@ -103,13 +103,13 @@ AI HAT을 쓸 가능성이 있으면 빈 PCB 높이만 남기지 않는다. [공
 | compute 후보 | 기계 설계 결정 |
 |---|---|
 | Raspberry Pi 5 | 첫 prototype 기본값, 공식 STEP과 실제 보드로 검증 |
-| Pi 5 + AI HAT+ | Simulation PATCH-12 vision benchmark가 필요성을 증명할 때 stack envelope 추가 |
+| Pi 5 + AI HAT+ | Simulation PATCH-20 vision benchmark가 필요성을 증명할 때 stack envelope 추가 |
 | Compute Module 5 | torso가 Pi 5를 수용하지 못할 때만 carrier PCB와 함께 재설계 |
 | Jetson Orin Nano | vision policy가 Pi 5 경로의 deadline을 넘을 때 power·cooling·torso를 다시 설계 |
 
 [Compute Module 5 datasheet](https://pip.raspberrypi.com/categories/944/raspberry-pi-compute-module-5/documents/RP-008180-DS/cm5-datasheet.pdf?disposition=inline)는 module 크기를 `40 mm × 55 mm`로 정의한다. 더 작지만 carrier PCB가 필요하므로 첫 prototype에는 넣지 않는다.
 
-**Simulation PATCH-12의 실제 policy benchmark가 끝나기 전 torso 내부 mounting plate를 최종 고정하지 않는다.** 첫 prototype은 Pi 5용 plate 하나만 만들고, accelerator가 필요하다는 측정 결과가 생기면 해당 board 기준으로 revision한다.
+**Simulation PATCH-20의 실제 policy benchmark가 끝나기 전 torso 내부 mounting plate를 최종 고정하지 않는다.** 첫 prototype은 Pi 5용 plate 하나만 만들고, accelerator가 필요하다는 측정 결과가 생기면 해당 board 기준으로 revision한다.
 
 ## 3. CAD assembly 규칙
 
@@ -251,6 +251,6 @@ RViz는 dynamics를 검증하지 않는다. 여기서 보인다는 이유만으�
 - 출처와 license가 불명확한 mesh 없음
 - Pi 5 STEP, Active Cooler, connector cable, power converter를 포함한 torso 간섭 검사 통과
 - 실제 Pi 5로 mounting hole·connector·microSD·airflow 접근성 확인
-- Simulation PATCH-12 benchmark에서 선택한 compute board와 CAD revision 일치
+- Simulation PATCH-20 benchmark에서 선택한 compute board와 CAD revision 일치
 
-**Embedded PATCH-04의 URDF가 Embedded PATCH-05 hardware interface와 Simulation PATCH-12 Isaac Lab USD의 공통 기준이다.**
+**Embedded PATCH-04의 URDF가 Embedded PATCH-05 hardware interface와 Simulation PATCH-20 Isaac Lab USD의 공통 기준이다.**

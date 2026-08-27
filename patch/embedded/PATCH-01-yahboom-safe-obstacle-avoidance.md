@@ -93,7 +93,7 @@ Python과 C++ 모두 작성하되 동작 계약은 하나다.
 |---|---|---|
 | `max_linear_velocity` | 허용 최대 선속도 | vendor 최대값이 아닌 저속 |
 | `max_angular_velocity` | 허용 최대 각속도 | 전도·미끄럼 없는 저속 |
-| `max_linear_acceleration` | command 변화율 제한 | Simulation PATCH-10 실측으로 조정 |
+| `max_linear_acceleration` | command 변화율 제한 | Simulation PATCH-16 실측으로 조정 |
 | `scan_timeout` | 최신 scan이 없으면 정지 | 실제 scan 주기의 여러 배가 되지 않게 설정 |
 | `command_timeout` | 새 controller command가 없으면 정지 | controller 주기보다 길고 위험 지속 시간보다 짧게 설정 |
 | `stop_distance` | 회피를 시작하는 거리 | 실제 정지 거리보다 크게 설정 |
@@ -162,7 +162,7 @@ simulation과 real에서 metric 이름·단위를 같게 유지한다. 센서가
 - simulation static·crossing·timeout 회귀 시험 통과
 - 실물 바퀴 공중 시험과 정적 상자 10회 시험 결과 저장
 - scan·command timeout에서 zero command 확인
-- parameter, source commit, hardware inventory, metric을 Simulation PATCH-10 manifest에 기록
+- parameter, source commit, hardware inventory, metric을 Simulation PATCH-16 manifest에 기록
 - 충돌 0회라도 정지 거리·지연 수치를 함께 보고
 
-**이 결과가 Simulation PATCH-11 강화학습 policy의 최소 성능·안전 기준이다. RL이 이 baseline보다 나쁘면 실물 배포하지 않는다.**
+**이 결과가 Simulation PATCH-19 강화학습 policy의 최소 성능·안전 기준이다. RL이 이 baseline보다 나쁘면 실물 배포하지 않는다.**

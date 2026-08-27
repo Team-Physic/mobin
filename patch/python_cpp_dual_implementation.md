@@ -3,7 +3,7 @@
 - 작성일: 2026-08-03
 - 브랜치: `main`
 - 코드 기준: `turtlebot3_simulations@45633014`, `direct_visual_lidar_calibration@02a0dc03`, 상위 working tree
-- 대상: 루트 `code/python/`, `code/cpp/`, Docker Compose, PATCH-04, PATCH-06, PATCH-10
+- 대상: 루트 `code/python/`, `code/cpp/`, Docker Compose, PATCH-04, PATCH-06, PATCH-16
 - 결론: **공통 Gazebo 환경은 한 번만 유지한다. PATCH-06 장애물 회피의 Python/C++ package는 구현·검증 완료했고, extrinsic 이중 구현은 후속 범위다.**
 
 ### Why?
@@ -474,8 +474,8 @@ ros2 pkg executables mobile_robot_lab_cpp
 | PATCH-04 | Python/C++ extrinsic + parity test |
 | PATCH-05 | 동적 장애물 plugin은 공통 simulator C++ |
 | PATCH-06 | Python/C++ 회피 node + `implementation` arg |
-| PATCH-07 | 두 언어로 같은 low-light 결과 검증 |
-| PATCH-10 | Python/C++ raw collector parity, Python LeRobot exporter |
+| PATCH-17 | 두 언어로 같은 low-light 결과 검증 |
+| PATCH-16 | Python/C++ raw collector parity, Python LeRobot exporter |
 
 ## 18. 최종 완료 조건
 

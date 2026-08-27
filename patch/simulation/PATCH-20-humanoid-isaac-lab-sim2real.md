@@ -1,4 +1,4 @@
-# Simulation PATCH-12: 자체 Humanoid Isaac Lab 학습과 Sim2Real
+# Simulation PATCH-20: 자체 Humanoid Isaac Lab 학습과 Sim2Real
 
 - 작성일: 2026-08-15
 - 선행 조건: Embedded PATCH-04 URDF, Embedded PATCH-05 hardware·safety interface
@@ -287,4 +287,4 @@ policy output은 Embedded PATCH-05 joint limit·rate limit·fault handler를 우
 - simulation과 real metric을 같은 정의로 보고
 - emergency stop·watchdog·joint limit가 policy와 독립적으로 작동
 
-**Simulation PATCH-12이 최종 목표의 첫 완성점이다. 자체 CAD Humanoid가 동일한 robot description·action 계약으로 Isaac Lab에서 학습되고, 제한된 실물 task에서 정량 검증된다.**
+**Simulation PATCH-20이 최종 목표의 첫 완성점이다. 자체 CAD Humanoid가 동일한 robot description·action 계약으로 Isaac Lab에서 학습되고, 제한된 실물 task에서 정량 검증된다.**

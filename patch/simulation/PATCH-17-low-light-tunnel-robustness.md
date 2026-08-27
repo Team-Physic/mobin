@@ -1,4 +1,4 @@
-# Simulation PATCH-07: 저조도 터널 환경에서 Extrinsic 강건성 평가
+# Simulation PATCH-17: 저조도 터널 환경에서 Extrinsic 강건성 평가
 
 ## 왜 이 시나리오를 추천하는가
 
@@ -20,7 +20,7 @@ Simulation PATCH-04까지 완료한 뒤 수행하는 선택 확장이다. Simula
 ```text
 Simulation PATCH-02 밝은 실내 dataset ──┐
                             ├─ 같은 ground truth와 비교
-Simulation PATCH-07 저조도 터널 dataset ─┘
+Simulation PATCH-17 저조도 터널 dataset ─┘
 ```
 
 ## 추가/수정할 파일
@@ -64,7 +64,7 @@ BAGS_DIR=${BAGS_DIR:-"$ROOT_DIR/data/bags"}
 RESULTS_DIR=${RESULTS_DIR:-"$ROOT_DIR/data/results"}
 ```
 
-기본 동작은 바뀌지 않는다. Simulation PATCH-07에서만 환경변수로 다른 dataset을 선택한다. 새 스크립트를 복사하지 않는다.
+기본 동작은 바뀌지 않는다. Simulation PATCH-17에서만 환경변수로 다른 dataset을 선택한다. 새 스크립트를 복사하지 않는다.
 
 디렉터리를 만든다.
 

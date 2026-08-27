@@ -9,7 +9,7 @@
 
 Linux가 실행되는 Raspberry Pi 5는 학습 policy와 ROS 2에는 적합하지만 motor의 전류·position loop를 항상 정확한 주기로 실행하는 안전 controller로 간주하지 않는다.
 
-Pi 5 선택은 Simulation PATCH-12의 policy benchmark를 통과한다는 조건부 결정이다. 통과하지 못하면 policy model을 줄이거나 accelerator·compute board를 바꾸며, MCU의 actuator loop와 watchdog 책임은 바뀌지 않는다.
+Pi 5 선택은 Simulation PATCH-20의 policy benchmark를 통과한다는 조건부 결정이다. 통과하지 못하면 policy model을 줄이거나 accelerator·compute board를 바꾸며, MCU의 actuator loop와 watchdog 책임은 바뀌지 않는다.
 
 | 계층 | 담당 |
 |---|---|
@@ -242,4 +242,4 @@ Pi와 MCU clock이 다르면 offset·drift를 측정한다. 수신 시각만 sen
 - power-on 기본 disable, 통신 끊김과 과전류·과열에서 안전 상태 확인
 - Python policy와 C++ hardware driver 사이 단위·timestamp 계약 기록
 
-**실물 관절이 안전하게 같은 명령 계약을 따를 때만 Simulation PATCH-12의 학습 policy를 연결한다.**
+**실물 관절이 안전하게 같은 명령 계약을 따를 때만 Simulation PATCH-20의 학습 policy를 연결한다.**

@@ -1,7 +1,7 @@
 # Embedded PATCH-00: Yahboom MicroROS-Pi5 실물 연결과 인터페이스 고정
 
 - 작성일: 2026-08-15
-- 선행 조건: Simulation PATCH-06, Simulation PATCH-10의 topic·dataset 계약 이해
+- 선행 조건: Simulation PATCH-06, Simulation PATCH-16의 topic·dataset 계약 이해
 - 대상: 향후 `code/python/`, `code/cpp/`, `config/yahboom/`, 실물 MicroROS-Pi5
 - 결론: **Yahboom 기본 image와 firmware를 먼저 보존한 채 실제 node·topic·TF를 측정한다. 시뮬레이션의 `TwistStamped`와 실물의 `Twist` 차이는 작은 adapter에서만 변환한다.**
 
@@ -57,7 +57,7 @@ physical motor and sensor
 | [D.Hive 임베디드 firmware](https://www.wanted.co.kr/wd/366867) | MCU, RTOS, sensor driver, ROS 2 bridge, power, UART/CAN, OTA, 계측 | Embedded PATCH-05 protocol·timing·power 검증 |
 | [Polaris3D Embedded Linux](https://www.wanted.co.kr/wd/307655) | kernel/system log, C++, driver·IPC·network, GDB·strace·perf, BSP | Pi 5 service와 장애 재현·원인 분석 |
 | [아르비젼 Embedded software](https://www.wanted.co.kr/wd/358905) | MCU firmware와 UART·SPI·I2C·CAN driver | ESP32 peripheral과 protocol 단위 시험 |
-| [아그모 Embedded AI](https://www.wanted.co.kr/wd/371576) | edge model 최적화, sensor fusion, data lifecycle | Simulation PATCH-11~12의 onboard benchmark |
+| [아그모 Embedded AI](https://www.wanted.co.kr/wd/371576) | edge model 최적화, sensor fusion, data lifecycle | Simulation PATCH-19~12의 onboard benchmark |
 
 [임베디드 개발 계층에 대한 현업자 설명](https://gall.dcinside.com/mini/board/view/?id=embedded&no=4348&page=1)은 SoC의 HW→bootloader→OS→driver→middleware→application과 MCU의 HW→firmware 또는 HW→RTOS→application 구분을 이해하는 보조 자료다. 개인 경험에 기반한 글이므로 정의의 단독 근거로 쓰지 않고, 위 채용공고와 [Zephyr 공식 문서](https://docs.zephyrproject.org/latest/index.html), [FreeRTOS 공식 문서](https://www.freertos.org/Documentation/00-Overview), [micro-ROS 개념 문서](https://micro.ros.org/docs/concepts/)로 교차 확인한다.
 
@@ -136,7 +136,7 @@ find /root /home -maxdepth 4 -type d -name 'yahboomcar_ws' 2>/dev/null
 | workspace package 목록과 Git commit | 실행 source 식별 |
 | ESP32 firmware version·설정값 | motor behavior 재현 |
 | udev device와 serial baud rate | micro-ROS 연결 복원 |
-| wheel radius·wheel separation·PID 값 | Simulation PATCH-10 system identification 초기값 |
+| wheel radius·wheel separation·PID 값 | Simulation PATCH-16 system identification 초기값 |
 
 `artifacts/`에는 password, Wi-Fi key, token을 저장하지 않는다.
 

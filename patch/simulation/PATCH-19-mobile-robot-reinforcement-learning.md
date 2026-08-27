@@ -1,7 +1,7 @@
-# Simulation PATCH-11: Mobile Robot 강화학습 학습과 Simulation 검증
+# Simulation PATCH-19: Mobile Robot 강화학습 학습과 Simulation 검증
 
 - 작성일: 2026-08-15
-- 선행 조건: Simulation PATCH-05·06, Simulation PATCH-10, Embedded PATCH-01
+- 선행 조건: Simulation PATCH-05·06, Simulation PATCH-16, Embedded PATCH-01
 - 대상: 향후 `forks/turtlebot3_machine_learning/`, `code/python/`, `config/rl/mobile/`
 - 결론: **첫 강화학습은 2D LiDAR 기반 discrete-action DQN으로 제한한다. 공식 TurtleBot3 Jazzy 구현을 baseline으로 재현한 뒤, 같은 관측·action 계약으로 warehouse와 domain randomization 평가를 추가한다.**
 
@@ -11,7 +11,7 @@
 |---|---|---|
 | [TurtleBot3 Machine Learning e-Manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/machine_learning/) | Laser Distance Sensor 기반 DQN, environment·agent·test node 실행, Jazzy 설치 절차 | 첫 mobile RL baseline |
 | [ROBOTIS turtlebot3_machine_learning](https://github.com/ROBOTIS-GIT/turtlebot3_machine_learning) | `humble`, `jazzy`, `main` active branch, Apache-2.0 | 구현 시 내 fork의 `jazzy` branch 사용 |
-| Simulation PATCH-10 | episode MCAP, manifest, system identification, domain randomization | 학습·평가 데이터 규약 |
+| Simulation PATCH-16 | episode MCAP, manifest, system identification, domain randomization | 학습·평가 데이터 규약 |
 
 처음부터 Camera, 3D LiDAR, learned world model, continuous-action PPO를 한 policy에 넣지 않는다. 2D LiDAR DQN이 실패하면 센서 융합 문제인지 RL 문제인지 구분하기 어렵기 때문이다.
 
@@ -112,13 +112,13 @@ baseline 재현 결과에 다음을 남긴다.
 | validation | train과 다른 seed·장애물 pose | checkpoint 선택 |
 | test | DQN stage 4 | 마지막 일반화 평가 |
 | warehouse | Simulation PATCH-05 AWS warehouse | 좁은 통로·선반 환경 전이 평가 |
-| stress | Simulation PATCH-10 범위 경계 | noise·latency·friction 실패 지점 확인 |
+| stress | Simulation PATCH-16 범위 경계 | noise·latency·friction 실패 지점 확인 |
 
 test·warehouse 결과를 보고 reward나 hyperparameter를 바꾸면 그 결과는 validation으로 재분류하고 새 test seed를 만든다.
 
 ## 6. Domain Randomization은 실측 뒤 적용한다
 
-Simulation PATCH-10에서 구한 nominal 값 주변만 바꾼다.
+Simulation PATCH-16에서 구한 nominal 값 주변만 바꾼다.
 
 | randomization | 이유 |
 |---|---|

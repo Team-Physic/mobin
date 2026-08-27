@@ -1,7 +1,7 @@
 # Embedded PATCH-02: Yahboom 강화학습 Policy Sim2Real 검증
 
 - 작성일: 2026-08-15
-- 선행 조건: Simulation PATCH-10·11과 Embedded PATCH-01 완료
+- 선행 조건: Simulation PATCH-16·11과 Embedded PATCH-01 완료
 - 대상: 향후 `code/python/`, `code/cpp/`, `config/deployment/yahboom/`, Raspberry Pi 5
 - 결론: **학습 policy를 바로 motor에 연결하지 않는다. 기록 재생, 실물 shadow mode, 바퀴 공중 시험, 저속 지상 시험 순서로 승격하고 모든 출력은 Embedded PATCH-01 safety supervisor를 통과시킨다.**
 
@@ -67,7 +67,7 @@ GitHub에는 `docs/embedded/02_deployment_manifest.md`, `docs/embedded/02_shadow
 
 ## 2. 실물 MCAP replay로 검사한다
 
-Simulation PATCH-10의 real episode를 재생해 policy output만 별도 topic에 기록한다.
+Simulation PATCH-16의 real episode를 재생해 policy output만 별도 topic에 기록한다.
 
 ```text
 real MCAP → observation builder → policy → /policy/cmd_vel_requested
@@ -113,7 +113,7 @@ real MCAP → observation builder → policy → /policy/cmd_vel_requested
 
 | gap | 비교 방법 | 조정 위치 |
 |---|---|---|
-| LiDAR | 같은 벽 거리에서 range 분포·dropout·latency | Simulation PATCH-10 sensor randomization |
+| LiDAR | 같은 벽 거리에서 range 분포·dropout·latency | Simulation PATCH-16 sensor randomization |
 | command response | step command의 속도 rise time·overshoot | motor delay·gain·friction |
 | odometry | 직진·제자리 회전의 누적 오차 | wheel radius·separation |
 | compute | observation부터 applied command까지 지연 | runtime·control rate |

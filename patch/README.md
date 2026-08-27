@@ -39,7 +39,7 @@ Embedded PATCH의 `SW 실습`은 PC·Pi·CI에서 수행하는 firmware test, RO
 | `forks/direct_visual_lidar_calibration/` | `main` / `02a0dc039f5509708f384be4ff3228e0ae09352d` | 3D LiDAR-Camera extrinsic calibration |
 | `forks/aws-robomaker-small-warehouse-world/` | `ros2` / `ee0af733315e78432408c3cd98d378ecee5f767c` | ROS 2 warehouse asset의 Harmonic 이식 |
 
-Simulation PATCH-11 구현 시 [ROBOTIS `turtlebot3_machine_learning`](https://github.com/ROBOTIS-GIT/turtlebot3_machine_learning)의 공식 `jazzy` branch를 fork해 `forks/turtlebot3_machine_learning/`에 추가한다. 지금은 dependency로 고정하지 않는다.
+Simulation PATCH-19 구현 시 [ROBOTIS `turtlebot3_machine_learning`](https://github.com/ROBOTIS-GIT/turtlebot3_machine_learning)의 공식 `jazzy` branch를 fork해 `forks/turtlebot3_machine_learning/`에 추가한다. 지금은 dependency로 고정하지 않는다.
 
 Fork, `origin`/`upstream`, 실습 branch, license 의무는 [Fork workflow와 license 준수](../docs/how_to_fork_and_license.md)를 따른다.
 
@@ -63,15 +63,16 @@ Fork, `origin`/`upstream`, 실습 branch, license 의무는 [Fork workflow와 li
 5. [Simulation PATCH-04: URDF 반영과 정량 검증](simulation/PATCH-04-apply-and-verify.md)
 6. [Simulation PATCH-05: AWS Warehouse의 Gazebo Harmonic 이식](simulation/PATCH-05-obstacle-scenarios.md)
 7. [Simulation PATCH-06: 장애물 회피 node](simulation/PATCH-06-obstacle-avoidance.md)
-8. [Simulation PATCH-07: 저조도 터널 calibration 강건성](simulation/PATCH-07-low-light-tunnel-robustness.md)
-9. [Simulation PATCH-08: Behavior Tree calibration workflow](simulation/PATCH-08-behavior-tree-calibration-orchestration.md)
-10. [Simulation PATCH-09: GitHub Actions CI/CD](simulation/PATCH-09-github-actions-ci-cd.md)
-11. [Simulation PATCH-10: Sim2Real dataset과 domain randomization](simulation/PATCH-10-sim2real-dataset-collection.md)
-12. [Simulation PATCH-11: Mobile Robot 강화학습](simulation/PATCH-11-mobile-robot-reinforcement-learning.md)
-13. [Simulation PATCH-12: Humanoid Isaac Lab Sim2Real](simulation/PATCH-12-humanoid-isaac-lab-sim2real.md)
-14. [Simulation PATCH-13: LiDAR–BBox Association과 3D Tracking 평가](simulation/PATCH-13-lidar-association-and-3d-tracking-evaluation.md)
+8. [Simulation PATCH-07: Person LiDAR–BBox Association과 Tracking](simulation/PATCH-07-lidar-association-and-tracking.md)
+9. [Simulation PATCH-08: Warehouse Patrol과 Semantic Safety](simulation/PATCH-08-warehouse-patrol-semantic-safety.md)
+10. [Simulation PATCH-15: GitHub Actions CI/CD](simulation/PATCH-15-github-actions-ci-cd.md)
+11. [Simulation PATCH-16: Sim2Real dataset과 domain randomization](simulation/PATCH-16-sim2real-dataset-collection.md)
+12. [Simulation PATCH-17: 저조도 터널 calibration 강건성](simulation/PATCH-17-low-light-tunnel-robustness.md)
+13. [Simulation PATCH-18: Behavior Tree calibration workflow](simulation/PATCH-18-behavior-tree-calibration-orchestration.md)
+14. [Simulation PATCH-19: Mobile Robot 강화학습](simulation/PATCH-19-mobile-robot-reinforcement-learning.md)
+15. [Simulation PATCH-20: Humanoid Isaac Lab Sim2Real](simulation/PATCH-20-humanoid-isaac-lab-sim2real.md)
 
-Simulation PATCH-00~06은 앞 PATCH의 완료 조건을 따른다. PATCH-07·08은 PATCH-04 뒤 병렬 진행 가능하다. PATCH-09 기본 CI는 PATCH-00 뒤 시작하고, 구현된 test만 추가한다. PATCH-10은 PATCH-02의 기록 계약과 PATCH-05~07의 scenario 결과를 사용한다. PATCH-11은 PATCH-05·06·10이 필요하다. PATCH-12 asset 작업은 Embedded PATCH-04 URDF가 생성된 뒤 시작한다. PATCH-13은 PATCH-06 association 결과와 PATCH-10 기록 형식을 사용한다.
+Simulation PATCH-00~06은 sensor·calibration·기본 회피를 만든다. 오늘 확정한 person association·tracking은 PATCH-07, warehouse random walk·Nav2·CPA/LiDAR safety·자동 평가는 PATCH-08에서 바로 이어 구현한다. CI·dataset·저조도·Behavior Tree·강화학습·Humanoid는 현재 검증과 직접 연결되지 않으므로 PATCH-15~20으로 이동했다. PATCH-16 dataset은 PATCH-02·05·07·08 결과를 기록하고, PATCH-19 강화학습은 PATCH-06·08·16 이후 진행한다. PATCH-20 asset 작업은 Embedded PATCH-04 URDF가 필요하다.
 
 ## Embedded 트랙
 
@@ -103,15 +104,15 @@ Embedded Core PATCH-01~06은 ESP32·Pi 5로 채용공고 개념을 익히는 공
 | 통합 지점 | 필요한 Simulation 결과 | 필요한 Embedded 결과 | 허용되는 다음 행동 |
 |---|---|---|---|
 | Yahboom 결정론적 제어 | Simulation PATCH-06 controller·metric | Embedded PATCH-00 interface·watchdog | Embedded PATCH-01 저속 실물 시험 |
-| Yahboom RL | Simulation PATCH-11 policy, PATCH-10 dataset | Embedded PATCH-01 safety baseline | Embedded PATCH-02 replay→shadow→guarded |
-| Humanoid asset | Simulation physics 요구사항 | Embedded PATCH-04 URDF·mass·collision | Simulation PATCH-12 USD 변환·학습 |
-| Humanoid 실물 policy | Simulation PATCH-12 policy·benchmark | Embedded PATCH-05 timing·power·fault 통과 | tethered rig부터 제한 실행 |
+| Yahboom RL | Simulation PATCH-19 policy, PATCH-16 dataset | Embedded PATCH-01 safety baseline | Embedded PATCH-02 replay→shadow→guarded |
+| Humanoid asset | Simulation physics 요구사항 | Embedded PATCH-04 URDF·mass·collision | Simulation PATCH-20 USD 변환·학습 |
+| Humanoid 실물 policy | Simulation PATCH-20 policy·benchmark | Embedded PATCH-05 timing·power·fault 통과 | tethered rig부터 제한 실행 |
 
 ## 의도적으로 제외한 범위
 
 - 원본 `waffle_pi`의 2D LDS는 수정하지 않는다. 파생 `waffle_pi_3d`만 변경한다.
 - Calibration 기록에는 동적 장애물을 넣지 않는다. 움직이는 물체는 image와 point cloud의 같은 표면 대응을 깨뜨린다.
-- Nav2 전체 stack은 Simulation PATCH-06의 단순 회피 뒤 목표점 주행이 필요할 때 추가한다.
+- Nav2 전체 stack은 Simulation PATCH-08에서 저장 map·AMCL·고정 patrol route와 함께 추가한다.
 - Yahboom source·PDF·3D model은 명시적 재배포 license 확인 전 저장소에 복사하지 않는다.
 - 첫 Humanoid에서 손·팔·계단·vision policy를 동시에 만들지 않는다.
 - 공개 Humanoid CAD를 자체 설계인 것처럼 복제하지 않는다. component별 license와 attribution을 확인한다.
