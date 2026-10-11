@@ -1,6 +1,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# Odom frame의 3D 사람 위치를 거리 기반 Hungarian assignment로 기존 ID에 연결하는 Python 기준선이다.
+# 입력은 meter 위치 목록과 second timestamp, 출력은 ID·현재위치·최근 trajectory를 가진 track tuple이다.
+# 최대거리 밖의 detection은 새 ID가 되고 max_age를 넘긴 track은 제거된다.
+# Velocity·covariance·Kalman prediction이 없어 production C++ tracker의 비교 기준으로만 사용한다.
+
 from dataclasses import dataclass, field
 import math
 
@@ -17,7 +22,7 @@ class PersonTrack:
 
 
 class PersonTracker:
-    """Associate odom-frame person positions with stable integer IDs."""
+    """Odom frame의 사람 위치를 거리 기반 integer ID로 연결한다."""
 
     def __init__(self, distance_gate=0.75, max_age=1.0, history_size=50):
         if distance_gate <= 0.0 or max_age < 0.0 or history_size < 1:
@@ -29,6 +34,7 @@ class PersonTracker:
         self.tracks = []
 
     def update(self, detections, stamp):
+        # Simulation clock이 뒤로 이동하면 이전 timeline의 track을 재사용하지 않는다.
         if self.tracks and stamp < max(track.last_seen for track in self.tracks):
             self.tracks.clear()
         self.tracks = [
@@ -36,6 +42,7 @@ class PersonTracker:
             if stamp - track.last_seen <= self.max_age
         ]
 
+        # 한 frame 전체 조합을 함께 풀어 greedy 순서에 따른 중복 연결을 막는다.
         matches = self._hungarian_matches(detections)
         matched_detections = set()
         for track_index, detection_index in matches:

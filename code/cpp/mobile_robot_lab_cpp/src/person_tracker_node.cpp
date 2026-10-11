@@ -1,6 +1,11 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// odom frame의 Detection3D를 여러 frame에 걸쳐 같은 사람 track으로 유지하는 ROS 2 node다.
+// Hungarian assignment와 Kalman Filter 결과를 ID·위치·속도·covariance message로 발행한다.
+// RViz에서는 track 상태, trajectory, velocity, 95% covariance ellipse를 함께 표시한다.
+// 입력과 모든 출력 위치는 message header가 지정한 동일 tracking frame을 사용한다.
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -48,6 +53,7 @@ public:
   }
 
 private:
+  // 거리·시간은 odom frame의 meter, second 단위다. confirmation은 최근 frame의 hit 횟수다.
   TrackerConfig tracker_config()
   {
     TrackerConfig config;
@@ -74,6 +80,8 @@ private:
 
   void on_detections(const vision_msgs::msg::Detection3DArray::SharedPtr message)
   {
+    // 입력 Detection3D의 header frame(기본 odom)을 보존한다. Tracker는 지면 2D 위치만 사용하고
+    // z는 사람 ID association과 CPA 계산에 필요하지 않아 제외한다.
     std::vector<Detection2> detections;
     detections.reserve(message->detections.size());
     for (const auto & detection : message->detections) {
@@ -249,6 +257,8 @@ private:
     const mobile_robot_lab_msgs::msg::TrackedPerson & person,
     visualization_msgs::msg::MarkerArray & output)
   {
+    // Position covariance의 고유벡터는 ellipse 방향, sqrt(고유값)은 각 축 표준편차다.
+    // 2.447을 곱해 2D Gaussian의 약 95% 신뢰 ellipse를 RViz에 그린다.
     Eigen::Matrix2d covariance;
     covariance << person.position_covariance[0], person.position_covariance[1],
       person.position_covariance[2], person.position_covariance[3];

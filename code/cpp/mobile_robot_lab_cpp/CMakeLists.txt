@@ -10,13 +10,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(mobile_robot_lab_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common sample_consensus segmentation)
+find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -30,10 +34,13 @@ ament_target_dependencies(
   obstacle_avoidance_cpp geometry_msgs rclcpp sensor_msgs)
 
 add_executable(lidar_bbox_association_cpp src/lidar_bbox_association_node.cpp)
-target_include_directories(lidar_bbox_association_cpp PRIVATE include)
+target_include_directories(
+  lidar_bbox_association_cpp PRIVATE include ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(
-  lidar_bbox_association_cpp geometry_msgs message_filters rclcpp sensor_msgs
-  tf2 tf2_ros vision_msgs)
+  lidar_bbox_association_cpp cv_bridge diagnostic_msgs geometry_msgs message_filters
+  pcl_conversions rclcpp sensor_msgs tf2 tf2_ros vision_msgs visualization_msgs)
+target_link_libraries(
+  lidar_bbox_association_cpp ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(person_tracker_cpp src/person_tracker_node.cpp)
 target_include_directories(person_tracker_cpp PRIVATE include ${EIGEN3_INCLUDE_DIRS})
@@ -70,6 +77,12 @@ if(BUILD_TESTING)
   add_executable(camera_lidar_fusion_test test/camera_lidar_fusion_test.cpp)
   target_include_directories(camera_lidar_fusion_test PRIVATE include)
   add_test(NAME camera_lidar_fusion_test COMMAND camera_lidar_fusion_test)
+
+  add_executable(ground_plane_filter_test test/ground_plane_filter_test.cpp)
+  target_include_directories(
+    ground_plane_filter_test PRIVATE include ${PCL_INCLUDE_DIRS})
+  target_link_libraries(ground_plane_filter_test ${PCL_LIBRARIES})
+  add_test(NAME ground_plane_filter_test COMMAND ground_plane_filter_test)
 
   add_executable(constant_velocity_tracker_test test/constant_velocity_tracker_test.cpp)
   target_include_directories(

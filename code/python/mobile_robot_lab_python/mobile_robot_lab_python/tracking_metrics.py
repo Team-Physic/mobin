@@ -1,6 +1,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# Frame별 GT ID와 예측 track ID의 2D 위치를 Hungarian assignment로 연결해 MOT 지표를 누적한다.
+# 입력 위치는 같은 odom frame의 meter 좌표이며 기본 0.75 m gate 안의 조합만 TP로 인정한다.
+# 출력은 TP·FP·FN·IDSW, MOTA·IDF1과 단일 threshold의 DetA·AssA·HOTA 요약이다.
+# 이 module은 관측 가능성을 판정하지 않으므로 호출자가 평가할 GT 집합을 먼저 제한해야 한다.
+
 from collections import Counter
 from collections import defaultdict
 import math
@@ -34,12 +39,14 @@ class TrackingMetrics:
         self.pred_total += len(predictions)
         self.gt_counts.update(ground_truth.keys())
         self.pred_counts.update(predictions.keys())
+        # Frame별 위치 gate를 통과한 일대일 조합만 TP로 누적한다.
         matches = self._matches(ground_truth, predictions)
         self.true_positives += len(matches)
         self.false_negatives += len(ground_truth) - len(matches)
         self.false_positives += len(predictions) - len(matches)
         for ground_truth_id, prediction_id in matches:
             previous = self.previous_prediction.get(ground_truth_id)
+            # ROI 이탈 여부와 무관하게 같은 GT의 이전 predicted ID와 다르면 ID switch다.
             if previous is not None and previous != prediction_id:
                 self.id_switches += 1
             self.previous_prediction[ground_truth_id] = prediction_id
@@ -108,6 +115,7 @@ class TrackingMetrics:
             for column, prediction_id in enumerate(prediction_ids):
                 counts[row, column] = self.pair_counts[
                     (ground_truth_id, prediction_id)]
+        # 전체 timeline에서 GT ID와 predicted ID의 일관된 대응 수가 최대인 조합을 고른다.
         rows, columns = linear_sum_assignment(-counts)
         return int(sum(counts[row, column] for row, column in zip(rows, columns)))
 

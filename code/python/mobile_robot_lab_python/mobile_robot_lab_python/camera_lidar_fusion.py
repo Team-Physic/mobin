@@ -3,6 +3,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# LiDAR point의 rigid transform, pinhole Camera 투영과 bbox 내부 point 선택을 제공하는 순수 계산 module이다.
+# 입력은 LiDAR frame의 meter 좌표, T_camera_lidar, Camera 내부 파라미터와 pixel bbox다.
+# 출력은 매칭 point의 median 3D 위치와 LiDAR 원점 거리이며 ROS message나 전역 상태를 사용하지 않는다.
+# Camera optical frame은 x=right, y=down, z=forward이고 distortion 보정된 image를 가정한다.
+
 from dataclasses import dataclass
 import math
 import statistics
@@ -41,7 +46,7 @@ class Association:
 
 
 def transform_point(point, rotation, translation):
-    """Apply T_camera_lidar to one LiDAR point."""
+    """T_camera_lidar를 LiDAR point에 적용해 Camera frame 좌표를 반환한다."""
     return Point3(
         rotation[0][0] * point.x + rotation[0][1] * point.y +
         rotation[0][2] * point.z + translation.x,
@@ -53,7 +58,7 @@ def transform_point(point, rotation, translation):
 
 
 def project_point(point_camera, intrinsics):
-    """Project a Camera optical-frame point to an undistorted image pixel."""
+    """Camera optical frame point를 왜곡 보정된 image pixel에 투영한다."""
     if point_camera.z <= 0.0:
         return None
     return (
@@ -64,7 +69,7 @@ def project_point(point_camera, intrinsics):
 
 def associate_bbox(points_lidar, rotation, translation, intrinsics, bbox,
                    min_points=3):
-    """Return median 3D position of LiDAR points projected inside a YOLO bbox."""
+    """YOLO bbox 안에 투영된 LiDAR point의 median 3D 위치를 반환한다."""
     if min_points < 1:
         raise ValueError('min_points must be positive')
     if bbox.u_min > bbox.u_max or bbox.v_min > bbox.v_max:

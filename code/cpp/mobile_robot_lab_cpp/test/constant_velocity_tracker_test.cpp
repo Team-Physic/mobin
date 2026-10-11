@@ -1,6 +1,10 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// Constant Velocity Kalman tracker의 예측·관측 갱신과 다인 Hungarian assignment를 검증한다.
+// 합성 입력은 odom 평면의 meter 위치와 second timestamp이며 ROS runtime을 사용하지 않는다.
+// 교차·관측 누락·거리/Mahalanobis gate·lifecycle·clock reset에서 ID와 covariance를 확인한다.
+
 #include <cassert>
 #include <cmath>
 

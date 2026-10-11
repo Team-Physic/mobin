@@ -3,6 +3,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# 2D LaserScan 구간별 최소거리로 전진·회전·정지를 선택하는 Python 기준선 node다.
+# 입력은 meter 단위 `/scan`, 출력은 `base_link` 기준 `/cmd_vel` TwistStamped다.
+# stop/clear threshold의 hysteresis와 좌우 여유거리로 회피 상태와 회전방향을 결정한다.
+# Scan timeout 또는 유효하지 않은 구간이 있으면 zero command를 발행하고 종료 때도 정지시킨다.
+
 import math
 from dataclasses import dataclass
 from typing import Optional

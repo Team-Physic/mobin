@@ -1,6 +1,10 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# LiDAR→Camera transform과 pinhole projection 후 bbox 내부 point만 선택하는 Python 기준선을 검증한다.
+# 합성 3D 좌표는 meter, bbox와 Camera 내부 파라미터는 pixel 단위를 사용한다.
+# 최소 point 수 미달, Camera 뒤 point와 bbox 밖 point가 association에서 제외되어야 한다.
+
 import unittest
 
 from mobile_robot_lab_python.camera_lidar_fusion import associate_bbox

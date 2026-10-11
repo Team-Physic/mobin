@@ -3,6 +3,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# Map frame의 고정 waypoint 목록을 Nav2 FollowWaypoints action으로 반복 요청하는 patrol node다.
+# 입력은 평탄화한 x(m)·y(m)·yaw(rad), lap 수와 시작 지연시간(second) parameter다.
+# Goal 수락·완료·누락 결과를 `/patrol/status`에 발행해 evaluator가 완주 여부를 기록한다.
+# 이 node는 경로를 직접 계산하지 않고 Nav2 action server의 planning과 control을 사용한다.
+
 import math
 
 from geometry_msgs.msg import PoseStamped

@@ -3,6 +3,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# YOLO bbox와 동기화한 LiDAR point를 Camera pixel에 투영해 사람의 3D 위치를 만드는 Python 기준선이다.
+# Detection과 PointCloud의 timestamp 차이를 제한하고 TF로 LiDAR→Camera·ground·odom 변환을 조회한다.
+# bbox 내부 point의 median 위치를 PoseArray로, 선택 point와 Euclidean track Marker를 debug topic에 발행한다.
+# 현재 production graph는 Instance Mask·RANSAC·Kalman을 구현한 C++ node를 사용하며 이 module은 비교용이다.
+
 import math
 
 from geometry_msgs.msg import Pose
@@ -35,7 +40,7 @@ from mobile_robot_lab_python.person_tracker import PersonTracker
 
 
 def quaternion_rotation(quaternion):
-    """Convert a geometry_msgs quaternion to a 3x3 rotation matrix."""
+    """geometry_msgs quaternion을 정규화해 3×3 회전행렬로 변환한다."""
     norm = math.sqrt(sum(
         value * value for value in (
             quaternion.x, quaternion.y, quaternion.z, quaternion.w)))
@@ -68,6 +73,7 @@ def transform_parts(transform):
 
 
 def remove_ground(points, rotation, translation, minimum_height):
+    """Point를 Ground Reference Frame으로 변환해 최소 z보다 높은 점만 남긴다."""
     return [
         point for point in points
         if transform_point(point, rotation, translation).z > minimum_height
@@ -224,6 +230,7 @@ class LidarBboxAssociationNode(Node):
         intrinsics = Intrinsics(
             self.camera_info.k[0], self.camera_info.k[4],
             self.camera_info.k[2], self.camera_info.k[5])
+        # 같은 cloud timestamp의 TF를 사용해 움직이는 robot에서도 세 변환의 시점을 일치시킨다.
         raw_points = [
             Point3(float(raw[0]), float(raw[1]), float(raw[2]))
             for raw in point_cloud2.read_points(
@@ -252,6 +259,7 @@ class LidarBboxAssociationNode(Node):
             center = detection.bbox.center.position
             half_width = detection.bbox.size_x * 0.5
             half_height = detection.bbox.size_y * 0.5
+            # Python 기준선은 bbox 내부 모든 point의 median을 사용하므로 뒤쪽 표면이 섞일 수 있다.
             association = associate_bbox(
                 lidar_points, rotation, translation, intrinsics,
                 BoundingBox(

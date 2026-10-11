@@ -1,6 +1,11 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// 2D LaserScan의 전방·좌우 최소거리만으로 전진·회전·정지를 선택하는 C++ 기준선 node다.
+// 입력은 meter 단위 `/scan`, 출력은 `base_link` 기준 `/cmd_vel` TwistStamped다.
+// stop/clear 거리의 hysteresis로 경계 진동을 줄이고 지정 또는 여유가 큰 방향으로 회전한다.
+// Scan timeout이나 필수 구간의 유효 range가 없으면 이동하지 않는 fail-safe를 사용한다.
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -118,6 +123,7 @@ private:
       hazard_distance = std::min(hazard_distance, *distances_.right);
     }
 
+    // 진입과 해제 거리를 다르게 둬 threshold 근처 sensor noise로 상태가 반복 전환되는 것을 막는다.
     if (hazard_distance <= stop_distance_ && !avoiding_) {
       avoiding_ = true;
       turn_direction_ = choose_turn_direction();

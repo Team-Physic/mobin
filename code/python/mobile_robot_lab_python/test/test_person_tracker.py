@@ -1,6 +1,10 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# Python 거리 기반 tracker의 Hungarian assignment, ID 생성과 timeout 제거를 검증한다.
+# 입력은 odom의 meter 위치와 second timestamp이며 ROS message를 사용하지 않는다.
+# 두 사람이 교차하거나 detection 순서가 바뀌어도 최소 전체거리 조합을 선택해야 한다.
+
 import unittest
 
 from mobile_robot_lab_python.person_tracker import PersonTracker

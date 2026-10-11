@@ -31,14 +31,29 @@ x-tb3-common: &tb3-common
     PEDESTRIAN_GRAPH_FILE: ${PEDESTRIAN_GRAPH_FILE:-/ws/install/turtlebot3_gazebo/share/turtlebot3_gazebo/params/warehouse_aisle_graph.yaml}
     YOLO_DEVICE: ${YOLO_DEVICE:-cpu}
     YOLO_TARGET_CLASS: ${YOLO_TARGET_CLASS:-person}
-    YOLO_CONFIDENCE: ${YOLO_CONFIDENCE:-0.05}
+    YOLO_CONFIDENCE: ${YOLO_CONFIDENCE:-0.25}
+    YOLO_MODEL_PATH: ${YOLO_MODEL_PATH:-/ws/model/yolo-seg/yolo11s-seg.pt}
     EVALUATION_OUTPUT_PATH: ${EVALUATION_OUTPUT_PATH:-/ws/data/results/tracking_metrics.json}
     WAREHOUSE_SCENARIO: ${WAREHOUSE_SCENARIO:-multi_person}
     SLAM: ${SLAM:-false}
     RUN_PATROL: ${RUN_PATROL:-true}
+    RUN_NAVIGATION: ${RUN_NAVIGATION:-true}
     RUN_EVALUATOR: ${RUN_EVALUATOR:-true}
     RUN_PERCEPTION: ${RUN_PERCEPTION:-true}
     RUN_SAFETY: ${RUN_SAFETY:-true}
+    PUBLISH_ANNOTATED_IMAGE: ${PUBLISH_ANNOTATED_IMAGE:-false}
+    EVALUATION_PERSON_NAME_PREFIX: ${EVALUATION_PERSON_NAME_PREFIX:-avoidance_person_}
+    EVALUATION_DURATION_SECONDS: ${EVALUATION_DURATION_SECONDS:-0.0}
+    EVALUATION_EXPECTED_PERSON_COUNT: ${EVALUATION_EXPECTED_PERSON_COUNT:-0}
+    EVALUATION_MAX_TIME_DIFFERENCE_SECONDS: ${EVALUATION_MAX_TIME_DIFFERENCE_SECONDS:-0.05}
+    EVALUATION_PERSON_REFERENCE_HEIGHT: ${EVALUATION_PERSON_REFERENCE_HEIGHT:-0.9}
+    EVALUATION_LIDAR_FRAME: ${EVALUATION_LIDAR_FRAME:-base_scan}
+    EVALUATION_LIDAR_MINIMUM_RANGE: ${EVALUATION_LIDAR_MINIMUM_RANGE:-0.1}
+    EVALUATION_LIDAR_MAXIMUM_RANGE: ${EVALUATION_LIDAR_MAXIMUM_RANGE:-20.0}
+    EVALUATION_LIDAR_HORIZONTAL_MINIMUM: ${EVALUATION_LIDAR_HORIZONTAL_MINIMUM:--3.141593}
+    EVALUATION_LIDAR_HORIZONTAL_MAXIMUM: ${EVALUATION_LIDAR_HORIZONTAL_MAXIMUM:-3.141593}
+    EVALUATION_LIDAR_VERTICAL_MINIMUM: ${EVALUATION_LIDAR_VERTICAL_MINIMUM:--0.261799}
+    EVALUATION_LIDAR_VERTICAL_MAXIMUM: ${EVALUATION_LIDAR_VERTICAL_MAXIMUM:-0.261799}
     NAV2_MAP: ${NAV2_MAP:-/ws/data/maps/small_warehouse.yaml}
     GZ_IP: ${GZ_IP:-127.0.0.1}
     GZ_SIM_RESOURCE_PATH: /opt/aws_warehouse:/opt/aws_warehouse/models
@@ -56,6 +71,7 @@ x-tb3-common: &tb3-common
     - tb3_log:/ws/log
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
     - ../data:/ws/data:rw
+    - ../trials:/ws/trials:rw
     - ../model:/ws/model:ro
     - yolo_clip_cache:/root/.cache/clip
 
@@ -96,7 +112,7 @@ services:
         test -f /ws/install/setup.bash ||
           { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
         source /ws/install/setup.bash &&
-        exec ros2 launch mobile_robot_lab_python yolo_lidar_fusion.launch.py model_path:=/ws/model/yolo-world/yolov8s-worldv2.pt device:=$${YOLO_DEVICE} target_class:=$${YOLO_TARGET_CLASS} confidence:=$${YOLO_CONFIDENCE}
+        exec ros2 launch mobile_robot_lab_python yolo_lidar_fusion.launch.py model_path:=$${YOLO_MODEL_PATH} device:=$${YOLO_DEVICE} target_class:=$${YOLO_TARGET_CLASS} confidence:=$${YOLO_CONFIDENCE} publish_annotated_image:=$${PUBLISH_ANNOTATED_IMAGE}
       "
 
   patrol:
@@ -107,7 +123,7 @@ services:
         test -f /ws/install/setup.bash ||
           { echo 'ERROR: 먼저 shell 서비스에서 colcon build를 실행하세요.'; exit 1; };
         source /ws/install/setup.bash &&
-        exec ros2 launch mobile_robot_lab_python warehouse_patrol.launch.py scenario:=$${WAREHOUSE_SCENARIO} slam:=$${SLAM} map:=$${NAV2_MAP} run_patrol:=$${RUN_PATROL} run_evaluator:=$${RUN_EVALUATOR} run_perception:=$${RUN_PERCEPTION} run_safety:=$${RUN_SAFETY} pedestrian_count:=$${PEDESTRIAN_COUNT} pedestrian_seed:=$${PEDESTRIAN_RANDOM_SEED} model_path:=/ws/model/yolo-world/yolov8s-worldv2.pt device:=$${YOLO_DEVICE} evaluation_output_path:=$${EVALUATION_OUTPUT_PATH} world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
+        exec ros2 launch mobile_robot_lab_python warehouse_patrol.launch.py scenario:=$${WAREHOUSE_SCENARIO} slam:=$${SLAM} map:=$${NAV2_MAP} run_navigation:=$${RUN_NAVIGATION} run_patrol:=$${RUN_PATROL} run_evaluator:=$${RUN_EVALUATOR} run_perception:=$${RUN_PERCEPTION} run_safety:=$${RUN_SAFETY} publish_annotated_image:=$${PUBLISH_ANNOTATED_IMAGE} pedestrian_count:=$${PEDESTRIAN_COUNT} pedestrian_seed:=$${PEDESTRIAN_RANDOM_SEED} model_path:=$${YOLO_MODEL_PATH} device:=$${YOLO_DEVICE} confidence:=$${YOLO_CONFIDENCE} evaluation_output_path:=$${EVALUATION_OUTPUT_PATH} evaluation_person_name_prefix:=$${EVALUATION_PERSON_NAME_PREFIX} evaluation_duration_seconds:=$${EVALUATION_DURATION_SECONDS} evaluation_expected_person_count:=$${EVALUATION_EXPECTED_PERSON_COUNT} evaluation_max_time_difference_seconds:=$${EVALUATION_MAX_TIME_DIFFERENCE_SECONDS} evaluation_person_reference_height:=$${EVALUATION_PERSON_REFERENCE_HEIGHT} evaluation_lidar_frame:=$${EVALUATION_LIDAR_FRAME} evaluation_lidar_minimum_range:=$${EVALUATION_LIDAR_MINIMUM_RANGE} evaluation_lidar_maximum_range:=$${EVALUATION_LIDAR_MAXIMUM_RANGE} evaluation_lidar_horizontal_minimum:=$${EVALUATION_LIDAR_HORIZONTAL_MINIMUM} evaluation_lidar_horizontal_maximum:=$${EVALUATION_LIDAR_HORIZONTAL_MAXIMUM} evaluation_lidar_vertical_minimum:=$${EVALUATION_LIDAR_VERTICAL_MINIMUM} evaluation_lidar_vertical_maximum:=$${EVALUATION_LIDAR_VERTICAL_MAXIMUM} world_dir:=$${TURTLEBOT3_WORLD_DIR} world:=$${TURTLEBOT3_WORLD} x_pose:=$${X_POSE} y_pose:=$${Y_POSE} yaw:=$${YAW} gazebo_gui:=$${GAZEBO_GUI} launch_rviz:=$${LAUNCH_RVIZ}
       "
 
 volumes:

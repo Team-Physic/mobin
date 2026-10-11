@@ -1,3 +1,7 @@
+# Python 장애물 회피 기준선의 LaserScan sector와 forward·turn·blocked 상태전이를 검증한다.
+# 합성 입력은 radian 각도와 meter 거리이며 ROS node나 Gazebo를 실행하지 않는다.
+# NaN·infinity 처리, stop/clear hysteresis와 지정 회전방향의 차단 조건을 확인한다.
+
 import math
 import unittest
 

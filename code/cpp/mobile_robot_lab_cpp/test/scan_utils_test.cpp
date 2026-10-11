@@ -1,3 +1,7 @@
+// LaserScan의 전방·좌우 sector 분류와 각 구간 최소거리 계산을 검증한다.
+// 합성 scan은 radian 각도와 meter range를 사용하며 NaN, infinity, 범위 밖 sample을 포함한다.
+// 유효 sample이 없는 구간은 값이 있다고 꾸미지 않고 nullopt로 남아야 한다.
+
 #include <cassert>
 #include <cmath>
 #include <limits>
