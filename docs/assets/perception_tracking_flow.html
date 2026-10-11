@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- 현재 Camera–LiDAR association과 tracker의 입력·선택·출력을 설명하는 정적 검토 그림이다.
+     좌표는 배치용 SVG pixel이며 센서의 실제 위치·거리·시간을 나타내지 않는다.
+     기존 presentation.tex의 색상과 Noto Sans CJK KR을 사용한다. 외부 요청·상태 변경은 없다. -->
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoboDine — Camera–LiDAR 관측과 추적</title>
+<style>
+:root{--paper:#f2f2f2;--ink:#191919;--muted:#555;--rule:#bcbcbc;--accent:#414aff;--accent-tint:#ececff}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif}main{max-width:1440px;margin:auto;padding:24px}h1{font-size:28px;margin:0 0 8px}p{margin:0 0 16px;line-height:1.7;color:var(--muted)}figure{margin:0;overflow-x:auto}svg{display:block;width:100%;min-width:900px;height:auto}svg text{font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;fill:var(--ink)}.name{font-size:20px;font-weight:700}.sub{font-size:16px;fill:var(--muted)}.step{fill:#fff;stroke:var(--ink);stroke-width:1.2}.input{fill:#e6e6e6;stroke:var(--muted)}.focus{fill:var(--accent-tint);stroke:var(--accent);stroke-width:2}.edge{fill:none;stroke:var(--muted);stroke-width:1.6;marker-end:url(#perception-tracking-arrow)}.note{font-size:16px;fill:var(--muted)}a{color:var(--accent)}footer{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px;font-size:14px;color:var(--muted);line-height:1.7}@media print{main{padding:0}svg{min-width:0}}
+</style>
+</head>
+<body><main>
+<h1>Camera–LiDAR 사람 관측과 추적</h1>
+<p>현재 코드의 처리·판정 흐름 · 2026-09-07 · RoboDine 개인 확장 검토 자료</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 810" role="img" aria-labelledby="perception-tracking-title perception-tracking-desc">
+<title id="perception-tracking-title">원본 mask와 LiDAR에서 사람 관측을 선택하고 지속 track을 갱신하는 흐름</title>
+<desc id="perception-tracking-desc">원본 binary mask와 LiDAR를 시간·TF 기준으로 연결하고 가림·지면을 제외한 뒤, instance별 유효 깊이 후보의 지지를 검사한다. 선택한 관측은 odom으로 변환한다. 선택된 관측이 없어도 frame 결과로 Kalman·Hungarian tracker를 갱신하며, 필터 통과는 사람 소속의 보증이 아니다.</desc>
+<defs><marker id="perception-tracking-arrow" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#555"/></marker></defs>
+<rect width="1440" height="810" fill="#f2f2f2"/>
+<rect x="32" y="24" width="1376" height="64" fill="#191919"/>
+<text x="56" y="64" style="fill:white;font-size:24px;font-weight:700">PERCEPTION → ASSOCIATION → TRACKING</text>
+<!-- 연결은 node보다 먼저 그린다. 별도 노드를 통과하거나 화살표끼리 경로를 공유하지 않는다. -->
+<path class="edge" d="M320 164H416"/>
+<path class="edge" d="M320 284H368Q376 284 376 276V224Q376 216 384 216H528Q536 216 536 208V200"/>
+<path class="edge" d="M600 200V248"/>
+<path class="edge" d="M600 336V384"/>
+<path class="edge" d="M600 456V504"/>
+<path class="edge" d="M768 560H976"/>
+<path class="edge" d="M600 616V648"/>
+<path class="edge" d="M1136 600V648"/>
+<path class="edge" d="M768 688H976"/>
+<rect x="840" y="532" width="64" height="20" fill="#f2f2f2"/><text x="872" y="548" text-anchor="middle" class="sub">충족</text>
+<rect x="608" y="620" width="72" height="20" fill="#f2f2f2"/><text x="644" y="636" text-anchor="middle" class="sub">미충족</text>
+<rect class="input" x="48" y="128" width="272" height="72" rx="20"/>
+<text x="184" y="156" text-anchor="middle" class="name">YOLO 원본 binary mask</text><text x="184" y="184" text-anchor="middle" class="sub">구멍·분리 영역 보존</text>
+<rect class="input" x="48" y="248" width="272" height="72" rx="20"/>
+<text x="184" y="276" text-anchor="middle" class="name">LiDAR · CameraInfo · TF</text><text x="184" y="304" text-anchor="middle" class="sub">전체 유효 cloud 입력</text>
+<rect class="step" x="416" y="128" width="368" height="72" rx="8"/>
+<text x="600" y="156" text-anchor="middle" class="name">Timestamp 검사 · Camera 투영</text><text x="600" y="184" text-anchor="middle" class="sub">Detection–cloud ≤50ms · cloud 시각 TF</text>
+<rect class="focus" x="416" y="248" width="368" height="88" rx="8"/>
+<text x="600" y="276" text-anchor="middle" class="name">동일 pixel 가림 제외 · 지면 제거</text><text x="600" y="300" text-anchor="middle" class="sub">최소 z보다 5cm 초과 뒤쪽 점 제외</text><text x="600" y="324" text-anchor="middle" class="sub">지면은 제약 RANSAC · 이웃 pixel 보존</text>
+<rect class="step" x="416" y="384" width="368" height="72" rx="8"/>
+<text x="600" y="412" text-anchor="middle" class="name">Instance별 깊이 후보 구성</text><text x="600" y="440" text-anchor="middle" class="sub">Label 일치 · 깊이 간격 0.35m · 최소 3점</text>
+<polygon class="step" points="600,504 768,560 600,616 432,560"/>
+<text x="600" y="556" text-anchor="middle" style="font-size:16px;font-weight:700">유효 후보 · 전경 지지</text><text x="600" y="580" text-anchor="middle" style="font-size:16px;font-weight:700">조건 충족?</text>
+<rect class="step" x="976" y="520" width="320" height="80" rx="8"/>
+<text x="1136" y="552" text-anchor="middle" class="name">선택한 점의 3D 관측</text><text x="1136" y="580" text-anchor="middle" class="sub">축별 중앙값 · odom 변환</text>
+<rect class="input" x="432" y="648" width="336" height="64" rx="20"/>
+<text x="600" y="676" text-anchor="middle" class="name">해당 instance 관측 없음</text><text x="600" y="700" text-anchor="middle" class="sub">Frame의 다른 관측은 유지</text>
+<rect class="step" x="976" y="648" width="320" height="64" rx="8"/>
+<text x="1136" y="676" text-anchor="middle" class="name">Hungarian · Kalman 갱신</text><text x="1136" y="700" text-anchor="middle" class="sub">ID · 위치 · 속도 · 불확실성 · 수명</text>
+<line x1="48" y1="748" x2="1392" y2="748" stroke="#bcbcbc"/>
+<text x="48" y="776" class="note">타원: 입력·미선택 결과   /   사각형: 처리   /   마름모: 판정   ·   시간·TF 검사 실패 등 조기 종료는 본문 참조</text>
+<text x="48" y="800" class="note">필터 통과 ≠ 사람 소속 보증. 앞쪽 반사점 없는 벽 오채택은 남음. GT는 별도 평가에만 사용.</text>
+</svg>
+</figure>
+<footer>전경 지지 조건: 최근접 유효 후보 점 수 ≥ 나머지 유효 후보 점 수 합계 × 2. 후보가 하나면 채택.<br>가림 깊이는 label·지면 필터 전 전체 점에서 계산. 기본값은 검증된 센서 오차 보증값이 아님.<br><a href="../portfolio-content-proposal.md">전체 로직·수치·포트폴리오 문구</a> · 출처: presentation.tex 색상·글꼴과 현재 C++/Python 구현. 기존 모델 추론·TF 등 준비 과정은 요약.</footer>
+</main></body></html>
