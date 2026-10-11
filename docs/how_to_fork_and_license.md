@@ -110,6 +110,7 @@ git -C forks/direct_visual_lidar_calibration push origin main
 | [ROBOTIS TurtleBot3 simulations](https://github.com/ROBOTIS-GIT/turtlebot3_simulations) | Apache-2.0 | LICENSE 제공, 기존 copyright·patent·trademark·attribution notice 유지, 수정 파일에 변경 사실 표시 |
 | [direct_visual_lidar_calibration README](https://github.com/koide3/direct_visual_lidar_calibration/blob/main/README.md)와 [package.xml](https://github.com/koide3/direct_visual_lidar_calibration/blob/main/package.xml) | MIT 선언 | 기존 copyright와 permission notice를 source 또는 배포물에 유지 |
 | [AWS Small Warehouse ROS 2 고정 commit](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world/tree/ee0af733315e78432408c3cd98d378ecee5f767c) | 루트 `LICENSE`와 `package.xml` 모두 `MIT-0` | 두 파일을 보존하고 원본 commit·변경 사실 기록. `gazebo_ros` 기반 Gazebo Classic launch는 실행하지 않음 |
+| [Ultralytics YOLO licensing](https://www.ultralytics.com/license) | pretrained model과 package는 기본 AGPL-3.0, 별도 Enterprise 선택 가능 | 공개 학습 project인지, 전체 source 공개가 가능한지, 상업·비공개·embedded 배포인지에 따라 조건 확인 |
 | Sophus | MIT | `thirdparty/Sophus/LICENSE.txt` 유지 |
 | nlohmann/json | MIT 중심, bundled component별 추가 고지 가능 | 해당 checkout의 license·third-party notice 확인 |
 | nanoflann | BSD | `thirdparty/nanoflann/COPYING`의 copyright·조건·면책문 유지 |
@@ -121,6 +122,8 @@ git -C forks/direct_visual_lidar_calibration push origin main
 현재 확인한 calibration 기준 commit은 README와 `package.xml`에 MIT를 선언하지만 repository root에 독립된 `LICENSE` 파일이 없다. 외부 배포 전에는 upstream이 제공한 정확한 copyright·permission notice를 확인해야 하며, 저작권자 표기를 추측해 새로 만들지 않는다.
 
 AWS warehouse ROS 2 고정 commit의 루트 `LICENSE`는 MIT-0 본문이고 `package.xml`도 `MIT-0`으로 선언한다. 모델 하위에는 별도 `LICENSE`, `COPYING`, `NOTICE`가 없고 `model.config`의 author 값은 비어 있다. MIT-0은 attribution을 조건으로 요구하지 않지만, 이 fork는 출처와 변경 이력을 추적하도록 루트 `LICENSE`와 원본 commit을 보존한다. fork의 루트 `LICENSE`와 `package.xml`을 모두 유지하고, 공개·상업 배포 전에는 별도 license 검토를 거친다. Harmonic 이식 범위와 검증 명령은 [Simulation PATCH-05](../patch/simulation/PATCH-05-obstacle-scenarios.md)에 기록한다.
+
+Ultralytics 공식 안내는 학습·개인·완전 공개 source 용도에는 AGPL-3.0, source를 공개하지 않는 상업·비공개·embedded 배포에는 Enterprise license 검토가 필요하다고 설명한다. 이 repository의 개별 source에 적힌 Apache-2.0 header가 Ultralytics package와 weight의 조건을 바꾸지는 않는다. 법률 자문이 아니므로 실제 제품 배포 전에는 적용 범위를 별도로 검토한다.
 
 ### Fork 실습 checklist
 

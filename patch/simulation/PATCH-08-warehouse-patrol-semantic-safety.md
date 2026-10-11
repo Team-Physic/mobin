@@ -177,7 +177,7 @@ Danger, emergency 또는 stale 정지 후 모든 조건이 safe인 상태가 `1 
 
 | topic | type | 내용 |
 |---|---|---|
-| `/safety/state` | `diagnostic_msgs/DiagnosticArray` | safe/caution/danger, stale source, selected track ID |
+| `/safety/state` | `diagnostic_msgs/DiagnosticArray` | state·reason, selected track ID, CPA, scan·odom·tracking age와 timeout |
 | `/safety/markers` | `visualization_msgs/MarkerArray` | robot/person velocity, CPA point, safety circle |
 | `/cmd_vel_mux` | `geometry_msgs/TwistStamped` | safety 전 command |
 | `/cmd_vel_safe` | `geometry_msgs/TwistStamped` | semantic safety 출력 |
@@ -247,6 +247,117 @@ cd /home/swlinux/Desktop/workspace/mobin
 RUN_COUNT=20 SEED_START=1001 RUN_TIMEOUT_SECONDS=300 \
   ./code/scripts/run-warehouse-evaluation.sh
 ```
+
+### 안전 제어 결과 만들기
+
+PATCH-08 결과는 `run-trial.sh`의 두 실행으로 나눈다. `safety-test`는 수식·상태전이의 deterministic test, `deterministic_crossing`은 실제 ROS 2 topic과 Gazebo를 포함한 runtime 검증이다.
+
+#### 1. Safety core regression을 실행한다
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin
+./code/scripts/run-trial.sh safety-test
+```
+
+| 결과 | 합격 조건 |
+|---|---|
+| `trials/safety-test/environment.txt` | commit과 실행 hardware 기록 |
+| `trials/safety-test/safety-test.log` | CPA, stale, emergency, stable-safe, watchdog test 모두 통과 |
+
+기존 결과가 있으면 덮어쓰지 않는다. 실행시각을 붙여 보관한 뒤 다시 실행한다.
+
+```bash
+mv trials/safety-test \
+  "trials/safety-test-$(date +%Y%m%d-%H%M%S)"
+./code/scripts/run-trial.sh safety-test
+```
+
+#### 2. 고정 crossing을 실행한다
+
+이 trial은 Nav2와 AMCL 없이 고정 publisher가 `/cmd_vel_nav`에 `0.10 m/s`를 보낸다. 따라서 아직 warehouse map이 없어도 Camera–LiDAR tracking부터 safety stop까지 재현할 수 있다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin
+YOLO_DEVICE=0 GAZEBO_GUI=true LAUNCH_RVIZ=true \
+  ./code/scripts/run-trial.sh deterministic_crossing
+```
+
+자동 판정은 다음 세 조건을 요구한다.
+
+| 조건 | 근거 파일 |
+|---|---|
+| 유효한 Camera–LiDAR association image 존재 | `association.png` |
+| `person_cpa_danger` 발생 | `evidence.json`, `safety-events.json` |
+| danger 해제 뒤 `stable_safe_hold` 발생 | `evidence.json`, `safety-events.json` |
+
+#### 3. 실행 중 command와 CPA를 확인한다
+
+새 terminal에서 실행 중인 container에 들어간다.
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin/docker
+docker compose -f compose.yaml -f compose.nvidia.yaml exec patrol bash
+```
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source /ws/install/setup.bash
+
+ros2 topic echo /safety/state
+ros2 topic echo /cmd_vel_mux
+ros2 topic echo /cmd_vel_safe
+ros2 topic echo /cmd_vel
+```
+
+| 순간 | `/cmd_vel_mux` | `/cmd_vel_safe` | `/safety/state` |
+|---|---:|---:|---|
+| 사람 접근 전 | `linear.x=0.10` | `linear.x=0.10` | `safe` |
+| CPA danger | `linear.x=0.10` | `linear.x=0.00` | `person_cpa_danger` |
+| 1초 안정 대기 | `linear.x=0.10` | `linear.x=0.00` | `stable_safe_hold` |
+| 안전 복귀 | `linear.x=0.10` | `linear.x=0.10` | `safe` |
+
+RViz의 `Fixed Frame=odom`에서 `/tracking/markers`와 `/safety/markers`를 함께 추가한다. 사람 ID, robot/person velocity, CPA point와 safety circle이 한 화면에 들어오게 캡처해 `trials/deterministic_crossing/safety-rviz.png`로 저장한다.
+
+#### 4. 자동 결과를 판정한다
+
+```bash
+cd /home/swlinux/Desktop/workspace/mobin
+python3 -m json.tool trials/deterministic_crossing/evidence.json
+python3 -m json.tool trials/deterministic_crossing/summary.json
+```
+
+| 파일 | 포트폴리오 채택 조건 |
+|---|---|
+| `cpa-stop.png` | `t_cpa ≤ danger_t_cpa`, `d_cpa ≤ d_safe`일 때 `/cmd_vel_safe`만 0으로 감소 |
+| `stale-failsafe.png` | scan·odom·tracking age가 timeout을 넘을 때 감속·정지 |
+| `evidence.json` | `person_cpa_danger_seen`, `stable_safe_hold_seen`, `cpa_window.saved`가 모두 `true` |
+| `safety-events.json` | 선택된 track ID, `t_cpa`, `d_cpa`, `d_safe`가 danger 판단과 일치 |
+| `summary.json` | `true_positives>0`, `collision_count=0`; GT–odom 검증 후 사용 |
+| `safety-rviz.png` | 같은 track ID와 CPA point, safety circle을 동시에 표시 |
+
+**`cpa-stop.png`만으로 사람을 올바르게 인식했다고 주장하지 않는다.** 이 그림은 CPA 판정과 command 차단의 시간적 연결 근거다. 사람 선택 근거는 `association.png`, track ID와 CPA marker, `safety-events.json`을 함께 제시한다. `stale-failsafe.png`는 CPA 사건을 섞지 않고 입력 age·timeout과 fail-safe command만 보여준다.
+
+발표자료 두 번째 장은 다음처럼 구성한다.
+
+| 배치 | 담을 자료 | 한 문장 주장 |
+|---|---|---|
+| 큰 그림 | `cpa-stop.png` | Nav2/고정 publisher의 입력은 유지한 채 CPA 위험 구간에서 최종 속도만 0으로 제한했다. |
+| 별도 그림 | `stale-failsafe.png` | 입력 age가 timeout을 넘으면 CPA와 무관하게 fail-safe가 개입했다. |
+| 보조 그림 | `safety-rviz.png` | 선택된 사람 track, 상대속도, CPA point와 safety radius를 `odom`에서 확인했다. |
+| 작은 표 | `evidence.json`, `summary.json` | danger→stable hold→safe 전이, 충돌 수와 p95 tracking latency를 기록했다. |
+
+### 전체 patrol 결과는 map 생성 뒤 기록한다
+
+고정 crossing은 safety gate 검증이며 창고 자율순찰 검증이 아니다. Map 생성과 AMCL 확인 후 `run-warehouse-evaluation.sh`를 실행하고 다음 결과만 최종표에 추가한다.
+
+| 최종 결과 | 필요한 근거 |
+|---|---|
+| 창고 외곽 자율순찰 | RViz map·AMCL pose·Nav2 path 화면 |
+| 사람 2~5명 random walk | seed와 entity 수가 기록된 log |
+| 충돌 회피 성능 | unseen seed 20회 aggregate, collision 0회 |
+| 주행 지속성 | patrol 완주율과 실행시간 |
+
+현재 map·AMCL·3-lap·unseen seed 평가는 미완료다. **완료 전에는 `SLAM draft`와 `safety runtime prototype`으로만 표시한다.**
 
 ### test matrix
 
