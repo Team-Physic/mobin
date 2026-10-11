@@ -1,0 +1,145 @@
+# 실제 fusion·tracking topic의 동일 공간 관계를 odom 기준으로 표시한다.
+# 색상은 지면=주황, 비지면=회색, 선택된 association 점=초록이다.
+# RViz 설정만 변경하며 센서·association·tracking 계산에는 영향을 주지 않는다.
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded: ["/Global Options1"]
+      Splitter Ratio: 0.5
+    Tree Height: 700
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Background Color: 30; 34; 40
+    Fixed Frame: odom
+    Frame Rate: 20
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid 1m
+      Enabled: true
+      Value: true
+      Cell Size: 1
+      Plane Cell Count: 15
+      Color: 180; 180; 180
+      Alpha: 0.5
+      Reference Frame: <Fixed Frame>
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Ground (orange)
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /fusion/ground_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 5
+      Position Transformer: XYZ
+      Color Transformer: FlatColor
+      Color: 224; 136; 48
+      Alpha: 0.6
+      Style: Points
+      Size (Pixels): 2
+      Size (m): 0.03
+      Decay Time: 0
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Non-ground (gray)
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /fusion/non_ground_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 5
+      Position Transformer: XYZ
+      Color Transformer: FlatColor
+      Color: 170; 170; 170
+      Alpha: 0.35
+      Style: Points
+      Size (Pixels): 2
+      Size (m): 0.03
+      Decay Time: 0
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Associated person points (green)
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /fusion/associated_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 5
+      Position Transformer: XYZ
+      Color Transformer: FlatColor
+      Color: 32; 230; 96
+      Alpha: 1
+      Style: Spheres
+      Size (Pixels): 5
+      Size (m): 0.035
+      Decay Time: 0
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Track ID velocity covariance trajectory
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /tracking/markers
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 5
+    - Class: rviz_default_plugins/Marker
+      Name: Ground plane
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /fusion/ground_plane
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 5
+    - Class: rviz_default_plugins/TF
+      Name: Sensor frames
+      Enabled: true
+      Value: true
+      Show Names: true
+      Show Axes: true
+      Show Arrows: false
+      Marker Scale: 0.4
+      Frames:
+        All Enabled: false
+        base_footprint: {Value: true}
+        base_scan: {Value: true}
+        camera_rgb_optical_frame: {Value: true}
+    - Class: rviz_default_plugins/Image
+      Name: Camera association
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /camera/detections_annotated
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 2
+  Transformation:
+    Current: {Class: rviz_default_plugins/TF}
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 14
+      Focal Point: {X: 0, Y: 0, Z: 0.6}
+      Pitch: 0.55
+      Yaw: 0.8
+      Target Frame: <Fixed Frame>
+      Name: Current View
+      Near Clip Distance: 0.01
+    Saved: []
+Window Geometry:
+  Width: 1440
+  Height: 900
+  X: 0
+  Y: 0
+  Hide Left Dock: false
+  Hide Right Dock: true

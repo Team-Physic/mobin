@@ -1,0 +1,33 @@
+/lidar_bbox_association_cpp:
+  ros__parameters:
+    annotated_image_topic: /camera/detections_annotated
+    camera_info_topic: /camera/camera_info
+    camera_occlusion_depth_tolerance: 0.05
+    depth_window: 0.35
+    detections_topic: /detections
+    foreground_support_ratio: 2.0
+    ground_frame: base_footprint
+    ground_inlier_distance: 0.05
+    ground_max_origin_distance: 0.15
+    ground_max_tilt_degrees: 20.0
+    ground_min_inliers: 50
+    image_topic: /camera/image_raw
+    instance_labels_topic: /segmentation/instance_labels
+    max_time_delta: 0.05
+    min_points: 3
+    min_score: 0.25
+    points_topic: /calib/points
+    publish_annotated_image: true
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    start_type_description_service: true
+    sync_queue_size: 30
+    target_class: person
+    tracking_frame: odom
+    use_sim_time: false
+

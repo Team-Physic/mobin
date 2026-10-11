@@ -1,0 +1,18 @@
+Internal ctest changing into directory: /ws/build/mobile_robot_lab_cpp
+Test project /ws/build/mobile_robot_lab_cpp
+    Start 1: scan_utils_test
+1/5 Test #1: scan_utils_test ..................   Passed    0.00 sec
+    Start 2: camera_lidar_fusion_test
+2/5 Test #2: camera_lidar_fusion_test .........   Passed    0.00 sec
+    Start 3: ground_plane_filter_test
+3/5 Test #3: ground_plane_filter_test .........   Passed    0.06 sec
+    Start 4: constant_velocity_tracker_test
+4/5 Test #4: constant_velocity_tracker_test ...   Passed    0.00 sec
+    Start 5: semantic_safety_test
+5/5 Test #5: semantic_safety_test .............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.08 sec
+...........................                                              [100%]
+27 passed in 1.58s

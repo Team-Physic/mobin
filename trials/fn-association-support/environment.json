@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-07",
+  "git_head": "73f81c44a4647291e39e1c415c2dbfc4c3d38fb4",
+  "working_tree": "dirty; selected source hashes in source-sha256.json",
+  "capture": {
+    "simulation_seconds": 60,
+    "seed": 42,
+    "people": 3,
+    "model": "waffle_pi_3d_large",
+    "robot_command_m_s": 0.1,
+    "navigation": false,
+    "safety_enabled": true,
+    "yolo": "yolo11s-seg.pt",
+    "yolo_confidence": 0.25,
+    "sensor_recording": "raw MCAP captured; compact filtered inputs retained"
+  },
+  "replay": {
+    "input_frames": 997,
+    "instances": 796,
+    "pairing": "each exact label/detection stamp paired with nearest cloud within 0.05 s; TF at cloud stamp; existing C++ PCL ground filter",
+    "frames_with_gt": 635,
+    "distance_gate_m": 0.75,
+    "ground_truth": "same evaluator model-selection, world-to-odom and common geometric FoV; used for evaluation only",
+    "core": "actual C++ association and ConstantVelocityTracker via replay_bridge.cpp",
+    "coordinates": "input point arrays in camera optical frame, meter; rigid transforms to/from odom retained",
+    "statistic_frame_count": "empty GT and empty prediction frames excluded by existing evaluator convention",
+    "limitation": "offline synchronizer differs from online ApproximateTime; ROS replay is separately reported, not a matched denominator comparison"
+  },
+  "frames_sha256": "f3d038805e38c4d593113b2475e3d54b44fbbb1e906c396d2de28e0adda508b4"
+}

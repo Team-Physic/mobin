@@ -1,0 +1,30 @@
+{
+  "association_image_saved": true,
+  "association_outcomes": {
+    "ground_rejection": 0,
+    "multiple_depth_candidates": 207,
+    "no_points": 5,
+    "success": 18,
+    "tf_unavailable": 0,
+    "yolo_detections": 230
+  },
+  "cpa_window": {
+    "end": 54.182,
+    "event_found": true,
+    "saved": true,
+    "start": 40.986
+  },
+  "duration_seconds": 60.035,
+  "fused_detection_frames": 16,
+  "lidar_emergency_seen": false,
+  "person_cpa_danger_seen": true,
+  "person_detection_frames": 432,
+  "stable_safe_hold_seen": true,
+  "stale_window": {
+    "end": 6.403999999999999,
+    "event_found": true,
+    "saved": true,
+    "start": 0.0
+  },
+  "visible_association_candidates": 1
+}

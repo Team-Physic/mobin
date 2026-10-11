@@ -1,0 +1,42 @@
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[WARN] [1788773557.695806304] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+[WARN] [1788773557.695867584] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+[INFO] [1788773558.827519232] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788773558.828112231] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1788773559.005540971] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788773559.424782727] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788773559.426155238] [rviz]: Subscribing to: /fusion/associated_points
+
+[INFO] [1788773559.427509389] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788773559.498983999] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788773559.500702973] [rviz]: Subscribing to: /fusion/associated_points
+
+[INFO] [1788773559.502461280] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788773559.761909982] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788773704.560206024] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[WARN] [1788773716.849797605] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+[WARN] [1788773716.849856238] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+[INFO] [1788773719.375996848] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788773719.376300323] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1788773719.748906192] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788773720.013565487] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788773720.025920720] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788773720.368060022] [rviz]: Subscribing to: /fusion/associated_points
+
+[INFO] [1788773720.423482077] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788773720.425241689] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788773720.426426570] [rviz]: Subscribing to: /fusion/associated_points
+
+[INFO] [1788773720.520756397] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1788774652.425761926] [rviz]: Message Filter dropping message: frame 'base_footprint' at time 157.800 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+terminate called after throwing an instance of 'std::system_error'
+  what():  Invalid argument

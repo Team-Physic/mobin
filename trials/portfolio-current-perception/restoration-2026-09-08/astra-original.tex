@@ -1,0 +1,417 @@
+% !TeX program = xelatex
+% 기존 포트폴리오를 유지하며 Mobin의 개인 설계·구현과 검증 근거를 추가한다.
+% 입력: 기존 PDF의 그림, 실제 Gazebo·RViz 이미지, 기록 기반 평가 수치.
+% 출력: 16:9 발표용 PDF. 359.800초 사진과 별도 60초 평가의 조건을 구분한다.
+% Build: xelatex -interaction=nonstopmode -halt-on-error -jobname=presentation_tex presentation.tex
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{tabularx}
+
+\setsansfont{Noto Sans CJK KR}
+\setmainfont{Noto Sans CJK KR}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{headline}{}
+\setbeamertemplate{footline}{}
+\setbeamersize{text margin left=0pt,text margin right=0pt}
+
+\definecolor{Ink}{HTML}{191919}
+\definecolor{Canvas}{HTML}{F2F2F2}
+\definecolor{AccentGreen}{HTML}{27DB3E}
+\definecolor{AccentRed}{HTML}{FF3838}
+\definecolor{BrandAccent}{HTML}{414AFF}
+
+\newcommand{\CandidateName}{장성원}
+\newcommand{\TargetCompany}{지원 기업}
+\newcommand{\TargetRole}{Robotics Vision Engineer}
+% LaTeX PDF Preview builds only a cached copy of this .tex file. Use the source
+% deck's absolute path so image crops also resolve inside that cache directory.
+\newcommand{\SourceDeck}{/home/swlinux/Desktop/workspace/ai-job-search/cv/ppt/presentation.pdf}
+\newcommand{\AssetDir}{/home/swlinux/Desktop/workspace/ai-job-search/cv/ppt/assets}
+
+% Absolute-position helpers. Coordinates are fractions of the 16:9 page.
+\newcommand{\place}[4]{%
+  \node[anchor=north west,inner sep=0pt,text width=#3\paperwidth,align=left]
+    at ([xshift=#1\paperwidth,yshift=-#2\paperheight]current page.north west) {#4};%
+}
+\newcommand{\cropimg}[6]{%
+  \includegraphics[page=#1,trim=#2bp #3bp #4bp #5bp,clip,width=#6\paperwidth]{\SourceDeck}%
+}
+\newcommand{\canvas}{%
+  \fill[Canvas] (current page.south west) rectangle (current page.north east);%
+}
+\newcommand{\deckbar}{%
+  \fill[black] (current page.north west)
+    rectangle ([yshift=-0.145\paperheight]current page.north east);%
+}
+\newcommand{\deckheader}[2][30]{%
+  \deckbar
+  \place{0.01}{0.018}{0.97}{\color{white}\bfseries\fontsize{#1}{#1}\selectfont #2}%
+}
+\newcommand{\arrowmark}{%
+  \node[anchor=center,font=\fontsize{18}{18}\selectfont]
+    at ([xshift=-0.065\paperwidth,yshift=0.11\paperheight]current page.south east) {$\rightarrow$};%
+}
+\newcommand{\bulletline}[1]{\textbullet\enspace #1\par}
+
+\begin{document}
+
+% 1. Cover
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[white] (current page.south west) rectangle (current page.north east);
+  \fill[black] (current page.north west)
+    rectangle ([yshift=-0.265\paperheight]current page.north east);
+  \place{0.027}{0.035}{0.47}{\color{white}\bfseries\fontsize{70}{30}\selectfont\addfontfeatures{LetterSpace=-4}PUBLIC}
+  \place{0.027}{0.270}{1.20}{\color{Ink}\bfseries\fontsize{70}{30}\selectfont\addfontfeatures{LetterSpace=-4}RELATIONS}
+  \place{0.45}{0.835}{0.23}{\fontsize{10}{12}\selectfont Presented By :\\[-1pt]\mbox{\textbf{Seongwon Jang}}}
+  \place{0.73}{0.835}{0.12}{\fontsize{10}{12}\selectfont Present To :}
+  \arrowmark
+\end{tikzpicture}
+\end{frame}
+
+% 2. About
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{1. 자기 소개}
+  \place{0.136}{0.235}{0.122}{\cropimg{2}{196}{400}{1068}{190}{0.122}}
+  \place{0.145}{0.515}{0.12}{\centering\bfseries\fontsize{9}{11}\selectfont 장성원\\[-1pt]\mdseries 2000.11.23.}
+  \draw[line width=1.1pt] ([xshift=0.385\paperwidth,yshift=-0.21\paperheight]current page.north west)
+    -- ([xshift=0.385\paperwidth,yshift=-0.95\paperheight]current page.north west);
+  \place{0.040}{0.610}{0.027}{\includegraphics[width=\linewidth]{\AssetDir/github-logo.png}}
+  \place{0.040}{0.697}{0.027}{\includegraphics[width=\linewidth]{\AssetDir/huggingface-logo.png}}
+  \place{0.040}{0.784}{0.027}{\includegraphics[width=\linewidth]{\AssetDir/dacon-logo.png}}
+  \place{0.040}{0.871}{0.027}{\includegraphics[width=\linewidth]{\AssetDir/linkedin-logo.png}}
+  \place{0.075}{0.61}{0.29}{\fontsize{6.6}{9}\selectfont
+    \textbf{GitHub}\\http://github.com/JungSeong\par\vspace{4pt}
+    \textbf{HuggingFace}\\http://huggingface.co/JungSeong2\par\vspace{4pt}
+    \textbf{Dacon}\\http://dacon.io/myprofile/537952/home\par\vspace{4pt}
+    \textbf{LinkedIN}\\http://www.linkedin.com/in/seongwonjang}
+  \place{0.405}{0.225}{0.54}{\fontsize{7.3}{9.5}\selectfont
+    \textbf{학력}\\[-1pt]
+    \textbf{26.02} $\mid$ 세종대학교 학사 졸업\\
+    평점 4.02/4.5 (전공 평점 4.13/4.5)\par\vspace{5pt}
+    \textbf{자격/수상}\\[-1pt]
+    \textbf{2025.12} $\mid$ 정보처리기사 \quad \textbf{2020.11} $\mid$ 자동차운전면허 2종 보통\\
+    \textbf{2025.06} $\mid$ ROS2와 AI를 활용한 자율주행\&로봇팔 개발자 부트캠프 최우수상\\
+    \textbf{2024.12} $\mid$ 2024 IN-JEJU Challenge 해커톤 우수상\par\vspace{5pt}
+    \textbf{경력}\\[-1pt]
+    \textbf{25.07--09} $\mid$ UNIST 연구 인턴십\\
+    \bulletline{Mixture-of-Expert 모델의 효율적인 파라미터 파인튜닝 기법 연구 개발}
+    \vspace{5pt}\textbf{주요 프로젝트}\\[-1pt]
+    \bulletline{AI for Industry Challenge}
+    \bulletline{RoboDine}
+    \bulletline{구조물 안정성 물리 추론 AI 경진대회}
+    \vspace{5pt}\textbf{학내외 활동}\\[-1pt]
+    \textbf{2026} $\mid$ 모두의 연구소 Advanced Computer Vision Lab 스터디원\\
+    \textbf{2025} $\mid$ 오로카 판교 로봇 스터디원\\
+    \textbf{2024} $\mid$ 교내 프로그래밍 동아리 Prompt C언어 팀장}
+  \arrowmark
+\end{tikzpicture}
+\end{frame}
+
+% 3. Skills
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{1. 자기 소개}
+  \place{0.01}{0.155}{0.30}{\bfseries\fontsize{13}{18}\selectfont 기술 스택}
+  \place{0.01}{0.25}{0.08}{\bfseries\fontsize{11}{15}\selectfont HW}
+  \place{0.028}{0.315}{0.14}{\cropimg{3}{40}{323}{1203}{254}{0.14}}
+  \place{0.2071}{0.315}{0.1258}{\cropimg{3}{287}{323}{976}{254}{0.1258}}
+  \place{0.33225}{0.315}{0.1905}{\cropimg{3}{482}{323}{690}{254}{0.1905}}
+  \place{0.008}{0.620}{0.18}{\centering\fontsize{5.8}{8}\selectfont\mbox{Universal Robotics (UR5e)}}
+  \place{0.22}{0.620}{0.16}{\centering\fontsize{6.5}{8}\selectfont MyCobot280}
+  \place{0.42}{0.620}{0.17}{\centering\fontsize{6.5}{8}\selectfont Pinky}
+  \place{0.01}{0.72}{0.08}{\bfseries\fontsize{11}{15}\selectfont SW}
+  \place{0.02}{0.775}{0.50}{\cropimg{3}{31}{71}{694}{610}{0.50}}
+  \draw[line width=1.1pt] ([xshift=0.55\paperwidth,yshift=-0.17\paperheight]current page.north west)
+    -- ([xshift=0.55\paperwidth,yshift=-0.95\paperheight]current page.north west);
+  \place{0.562}{0.34}{0.42}{\fontsize{8}{11}\selectfont
+    \textbf{교육}\\
+    \textbf{2025.04--06} $\mid$ ROS2와 AI를 활용한 자율주행\&로봇팔 직업 훈련\par\vspace{8pt}
+    \textbf{자격/면허}\\
+    \textbf{2026.03} $\mid$ 정보처리기사\\
+    \textbf{2020.10} $\mid$ 2종 보통 면허\par\vspace{8pt}
+    \textbf{어학}\\
+    \textbf{2026.03} $\mid$ 오픽 IH\\
+    \textbf{2025.06} $\mid$ 토익 925}
+\end{tikzpicture}
+\end{frame}
+
+% 4. Projects index
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2. 주요 프로젝트}
+  \place{0.025}{0.42}{0.90}{\fontsize{16}{21}\selectfont
+    2-1. AI for Industry Challenge}
+  \place{0.025}{0.50}{0.90}{\fontsize{16}{21}\selectfont
+    2-2. RoboDine}
+  \place{0.025}{0.58}{0.90}{\fontsize{16}{21}\selectfont
+    2-3. 구조물 안정성 물리추론 AI 경진대회}
+\end{tikzpicture}
+\end{frame}
+
+% 5. AIC summary
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-1. AI for Industry Challenge}
+  \place{0.006}{0.33}{0.61}{\fontsize{7.5}{10}\selectfont
+    \renewcommand{\arraystretch}{1.35}
+    \begin{tabular}{|>{\centering\arraybackslash}m{0.075\paperwidth}|>{\raggedright\arraybackslash}m{0.477\paperwidth}|}\hline
+      담당 역할 & 팀장 \\ \hline
+      주요 업무 &
+      \bulletline{Gazebo Simulator 기반 랜덤화 환경 및 정책별 데이터 수집 ROS2 노드 개발}
+      \bulletline{\textbf{YOLO Keypoint Detection 및 Multiview Triangulation} 기반 포트 3-DoF 추론 로직 구현}
+      \bulletline{Fine-Grained한 상황에서 케이블 정렬을 위한 \textbf{MultiView Bilinear Cross-Attention Regressor} 구현}
+      \bulletline{팀원 구인 및 GitHub, HuggingFace, Notion 관리} \\ \hline
+      기술 스택 &
+      HW : Universal Robotics UR5e\par
+      SW : Python, PyTorch, Ubuntu 24.04, ROS2 Kilted Kaiju, Gazebo, Docker, YOLOv8, OpenCV\par
+      GPU : DGX Spark, NVIDIA RTX 3060 \\ \hline
+    \end{tabular}}
+  \draw[line width=1.1pt] ([xshift=0.625\paperwidth,yshift=-0.215\paperheight]current page.north west)
+    -- ([xshift=0.625\paperwidth,yshift=-0.95\paperheight]current page.north west);
+  \place{0.635}{0.351}{0.35}{\cropimg{5}{915}{141}{17}{249}{0.35}}
+  \place{0.635}{0.888}{0.35}{\makebox[\linewidth][c]{\bfseries\fontsize{9}{11}\selectfont Peg-In-Hole}}
+\end{tikzpicture}
+\end{frame}
+
+% 6. AIC randomization
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-1. AI for Industry Challenge}
+  \place{0.012}{0.175}{0.965}{\fontsize{7.5}{10}\selectfont
+    1. Gazebo Simulator에서 동작하는 \textbf{도메인 랜덤화 데이터 세트 생성 및 수집 ROS2 노드 구현}\\[-1pt]
+    \bulletline{Uniform Distribution으로 Task Board의 XY/yaw, 포트 타입 및 XY/yaw 변화, Gaussian Distribution으로 조명 변화를 둔 시나리오 생성과 HuggingFace Hub 업로드 로직 구현}}
+  \draw[line width=1.1pt] ([xshift=0.46\paperwidth,yshift=-0.29\paperheight]current page.north west)
+    -- ([xshift=0.46\paperwidth,yshift=-0.92\paperheight]current page.north west);
+  \place{0.008}{0.445}{0.44}{\cropimg{6}{11}{110}{795}{362}{0.44}}
+  \place{0.465}{0.34}{0.52}{\cropimg{6}{675}{111}{17}{278}{0.52}}
+  \place{0.02}{0.895}{0.42}{\makebox[\linewidth][c]{\bfseries\fontsize{8.5}{10.5}\selectfont Distribution (Task Board, Port, Lightening)}}
+  \place{0.47}{0.895}{0.51}{\makebox[\linewidth][c]{\bfseries\fontsize{8.5}{10.5}\selectfont Data Collector}}
+\end{tikzpicture}
+\end{frame}
+
+% 7. AIC triangulation
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-1. AI for Industry Challenge}
+  \place{0.012}{0.165}{0.965}{\fontsize{7.5}{10}\selectfont
+    2. \textbf{YOLO Keypoint Detection 및 Multiview Triangulation 기반 포트 3-DoF 추론 로직 구현}, 5개 Case에서 MAE 약 5mm 내외로 예측 정확도 달성}
+  \draw[line width=1.1pt] ([xshift=0.58\paperwidth,yshift=-0.215\paperheight]current page.north west)
+    -- ([xshift=0.58\paperwidth,yshift=-0.95\paperheight]current page.north west);
+  \place{0.009}{0.245}{0.555}{\cropimg{7}{13}{120}{627}{198}{0.555}}
+  \place{0.59}{0.25}{0.39}{\cropimg{7}{856}{40}{30}{201}{0.39}}
+\end{tikzpicture}
+\end{frame}
+
+% 8. AIC architecture
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckbar
+  \place{0.012}{0.165}{0.965}{\fontsize{8}{10.5}\selectfont
+    3. Fine-Grained한 상황에서 케이블 정렬을 위한 \textbf{MultiView Bilinear Cross-Attention Regressor} 구현\\[-1pt]
+    \bulletline{\textbf{Worst Case 대비 XYZ MAE 21.3\% 및 RPY MAE 16.5\% 향상}}}
+  \place{0.006}{0.27}{0.985}{\cropimg{8}{8}{58}{20}{217}{0.985}}
+\end{tikzpicture}
+\end{frame}
+
+% 9. AIC result
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-1. AI for Industry Challenge}
+  \place{0.012}{0.165}{0.965}{\fontsize{8}{10.5}\selectfont
+    3. Fine-Grained한 상황에서 케이블 정렬을 위한 \textbf{MultiView Bilinear Cross-Attention Regressor} 구현\\[-1pt]
+    \bulletline{\textbf{Case에서 Worst Case 대비 XYZ MAE 21.3\% 및 RPY MAE 16.5\% 향상}}}
+  \draw[line width=1.1pt] ([xshift=0.655\paperwidth,yshift=-0.225\paperheight]current page.north west)
+    -- ([xshift=0.655\paperwidth,yshift=-0.96\paperheight]current page.north west);
+  \place{0.016}{0.35}{0.625}{\cropimg{9}{23}{135}{517}{282}{0.625}}
+  \place{0.665}{0.305}{0.33}{\cropimg{9}{948}{80}{7}{250}{0.33}}
+\end{tikzpicture}
+\end{frame}
+
+% 10. RoboDine summary
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-2. RoboDine}
+  \place{0.025}{0.235}{0.95}{\fontsize{8}{11}\selectfont
+    \renewcommand{\arraystretch}{1.35}
+    \begin{tabularx}{\linewidth}{|>{\centering\arraybackslash}p{0.075\paperwidth}|X|}\hline
+      담당 역할 & RoboDine 팀원 / Mobin 개인 확장 전체 설계·구현 \\ \hline
+      주요 업무 &
+      \bulletline{데이터 전처리·파라미터 튜닝으로 단안 카메라 로봇팔의 객체 3-DoF 추정 정확도 14\% 향상}
+      \bulletline{단안 카메라 및 2D LiDAR 거리 정보를 융합한 ROS2 기반 장애물 인식 및 회피 노드 설계} \\ \hline
+      기술 스택 & HW : MyCobot280, Pinky\\
+      & SW : Python, PyTorch, Ubuntu 24.04, ROS2 Jazzy, OpenCV, YOLOv8\\
+      & GPU : NVIDIA RTX 3060 \\ \hline
+      개인 확장 & \textbf{Mobin: Camera·3D LiDAR 사람 관측 및 추적}\\
+      & ROS 2 데이터 연결·후보 판정·추적·평가기·실패 재현 직접 구현\\
+      & Gazebo Harmonic, C++/Python, PCL, 사전학습 YOLO11s-seg 활용 \\ \hline
+    \end{tabularx}}
+\end{tikzpicture}
+\end{frame}
+
+% 11. RoboDine pose estimation
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader{2-2. RoboDine}
+  \place{0.014}{0.165}{0.965}{\fontsize{7.5}{10}\selectfont
+    1. \textbf{데이터 전처리 및 파라미터 튜닝을 통한 단안 2D 카메라가 달린 로봇팔의 객체 3-DoF 추론 정확도 14\% 향상}\\[-1pt]
+    \bulletline{데이터 증강, Dropout, Pose Loss 계수 상향해 YOLO pose 모델 학습}
+    \bulletline{카메라 캘리브레이션 내부 파라미터와 YOLO 추론값으로 solvePnP 연산}}
+  \place{0.008}{0.315}{0.98}{\cropimg{11}{11}{35}{21}{285}{0.98}}
+\end{tikzpicture}
+\end{frame}
+
+% 12. RoboDine obstacle avoidance
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckbar
+  \place{0.01}{0.165}{0.53}{\fontsize{5.5}{7.5}\selectfont
+    2. ROS2 기반 단안 카메라 및 2D LiDAR 거리 정보를 융합한 장애물 인식 및 회피 노드 설계\\[-1pt]
+    \bulletline{\textbf{라이다 거리 30CM 이내 + 동적 장애물}: 정지 이후 장애물이 시야에서 사라지면 이동}
+    \bulletline{\textbf{라이다 거리 20CM 이내 + 정적 장애물}: 회피 이후 이동}}
+  \draw[line width=1.1pt] ([xshift=0.537\paperwidth,yshift=-0.275\paperheight]current page.north west)
+    -- ([xshift=0.537\paperwidth,yshift=-0.97\paperheight]current page.north west);
+  \place{0.01}{0.42}{0.515}{\cropimg{12}{14}{161}{684}{343}{0.515}}
+  \place{0.55}{0.205}{0.435}{\cropimg{12}{793}{31}{24}{166}{0.435}}
+\end{tikzpicture}
+\end{frame}
+
+% 13. Mobin synchronized evidence (source pixels preserved; RViz viewport cropped in TeX)
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader[21]{2-2. Mobin: Camera·LiDAR 사람 추적}
+  \place{0.025}{0.17}{0.95}{\fontsize{9}{12}\selectfont
+    \textbf{개인 설계·구현} / 사람 영역과 3D 점을 연결하고 위치·속도·ID를 추적}
+  \place{0.025}{0.245}{0.33}{\fontsize{8}{10}\selectfont\textbf{Gazebo Camera association}}
+  \place{0.38}{0.245}{0.595}{\fontsize{8}{10}\selectfont\textbf{RViz 3D / 같은 359.800초, ID 98·99 confirmed}}
+  \place{0.025}{0.30}{0.33}{\includegraphics[width=0.33\paperwidth]{\AssetDir/mobin/camera-association.png}}
+  \place{0.38}{0.30}{0.595}{\includegraphics[trim=300bp 220bp 250bp 240bp,clip,width=0.595\paperwidth]{\AssetDir/mobin/rviz.png}}
+  \place{0.025}{0.755}{0.33}{\fontsize{7.5}{10}\selectfont
+    \textbf{부분 관측된 두 사람}에 채택 점을 투영.\\
+    밝은 초록 점: 사람 instance에 연결한 점.\\
+    회색 점: 지면 분리 후 점(가림 제외 전).\\
+    영상의 가까운 인물은 track 99.\\
+    Instance 번호와 지속 track ID는 다름.}
+  \place{0.38}{0.785}{0.595}{\fontsize{7.5}{10}\selectfont
+    \textbf{노랑·주황 점}: 지면으로 분류한 점(평면 거리 $\leq$5cm).\\
+    \textbf{반투명 초록 평면}: 추정 지면의 3$\times$3m 표시. 안전 구역 아님.\\
+    흰 글자: ID·상태 / 자홍 타원: 위치 불확실성(약 95\%).\\
+    파란 화살표: 속도(1초 이동량) / 초록 선: 추정 위치 이력.}
+\end{tikzpicture}
+\end{frame}
+
+% 14. Mobin decisions and failure reproduction
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader[21]{2-2. Mobin: 관측 누락 원인과 수정}
+  \place{0.025}{0.175}{0.95}{\fontsize{9}{12}\selectfont
+    \textbf{문제}: 영상에 사람이 있어도 3D 관측이 누락되거나 배경 점을 채택}
+  \place{0.025}{0.25}{0.95}{\fontsize{8}{11}\selectfont
+    \setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{@{}p{0.19\paperwidth}XX@{}}\hline
+      \textbf{실패 원인} & \textbf{수정과 판단 근거} & \textbf{확인한 결과} \\ \hline
+      복수 깊이 후보를\newline 일괄 거부 &
+      최근접 유효 후보의 점 수가 나머지 합의 2배 이상이면 채택. 충분한 지지의 관측 보존. &
+      같은 저장 입력에서\newline FN 570에서 3으로 감소.\newline FP 138에서 121로 감소. \\ \hline
+      Polygon 재채움으로\newline mask 구멍·분리 영역 손실 &
+      원본 크기 binary mask 직접 전달. 추론에 없던 영역 생성을 방지. &
+      구멍·분리 사례의 추가 pixel 각각 49·10에서 0. 실제 사람 4개 mask의 전달 차이 0 pixel. \\ \hline
+      Camera의 같은 pixel에\newline 앞·뒤 LiDAR 점 혼입 &
+      관측된 최소 깊이보다 5cm 초과 뒤쪽 점만 제외. 이웃 pixel로 확장하지 않아 부분 관측 보존. &
+      합성 사람 3점(2m)과 벽 6점(5m)에서 사람 3점 보존. 인접 pixel도 보존. \\ \hline
+    \end{tabularx}}
+  \place{0.025}{0.755}{0.95}{\fontsize{8}{11}\selectfont
+    \textbf{추적 구현}: \texttt{odom} 위치·속도에 Constant Velocity Kalman 적용. 거리·Mahalanobis gate와\\
+    Hungarian 일대일 대응 사용. 최근 최대 5회 중 3회 hit 시 confirmed. 외형 기반 재식별은 미구현.}
+  \place{0.025}{0.88}{0.95}{\fontsize{8}{11}\selectfont
+    \textbf{검증}: C++·Python 회귀 32개, 실제 ROS node 합성 10사례. 벽만 들어오는 오채택도 재현.\\
+    최근접 점의 사람 소속은 보장할 수 없어, 벽 단독 후보·가림·사람 교차가 남은 과제.}
+\end{tikzpicture}
+\end{frame}
+
+% 15. Mobin metrics: paired policy comparison and separate current run
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader[21]{2-2. Mobin: 정량 검증과 남은 한계}
+  \place{0.025}{0.17}{0.95}{\fontsize{8.5}{11}\selectfont
+    \textbf{A. 동일 입력 비교}: 저장한 instance 점 묶음 997개, GT 635관측. 후보 선택 정책만 변경.}
+  \place{0.025}{0.245}{0.95}{\fontsize{8}{11}\selectfont
+    \setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{@{}Xrrrrrrrrr@{}}\hline
+      \textbf{실행} & TP & TN & FP & FN & Precision(\%) & Recall(\%) & F1(\%) & IDSW & IDF1(\%)\\\hline
+      A 기존 일괄 거부 & 65 & N/A & 138 & 570 & 32.02 & 10.24 & 15.51 & 8 & 5.49\\
+      A 점 지지 비교 & 632 & N/A & 121 & 3 & 83.93 & 99.53 & 91.07 & 8 & 42.22\\\hline
+      B 최신 별도 실행 & 310 & N/A & 64 & 20 & 82.89 & 93.94 & 88.07 & 15 & 24.43\\\hline
+    \end{tabularx}}
+  \place{0.025}{0.49}{0.95}{\fontsize{8}{11}\selectfont
+    \textbf{B. 최신 전체 조합}: Gazebo 60초, 보행자 3명·seed 42·정지 로봇, GT 330관측·평가 317회.\\
+    A와 직접 개선율 비교 불가. B는 Camera 30Hz·LiDAR 10Hz, 사진은 두 센서 모두 10Hz.}
+  \place{0.025}{0.60}{0.95}{\fontsize{7.5}{10.5}\selectfont
+    공통 ROI·0.75m gate, 모든 track 상태. \textbf{TP}: 대응 / \textbf{FP}: 미대응 track / \textbf{FN}: 미대응 GT.\\
+    \textbf{Precision(P)}=TP/(TP+FP): 출력한 track 중 GT와 위치가 대응한 비율.\\
+    \textbf{Recall(R)}=TP/(TP+FN): 실제 GT 사람 관측 중 track으로 찾아낸 비율.\\
+    \textbf{IDSW(ID Switch)}: 같은 사람의 track ID가 바뀐 횟수. 예: ID 7에서 12로 변경 시 1회.\\
+    \textbf{F1}: Precision·Recall의 조화평균 / \textbf{IDF1}: 전체 기록에서 일관된 GT ID·track ID 대응의 F1.\\
+    \textbf{TN}: 음성 객체 모집단 미정의로 N/A. Accuracy 미산출. 위치 대응과 ID 유지 성능은 별도로 해석.}
+  \place{0.025}{0.855}{0.95}{\fontsize{8}{11}\selectfont
+    \textbf{한계}: 단일 시나리오 검증. 벽 오채택·ID 전환이 남고 실물·조명 변화의 강건성은 미검증.}
+  \place{0.025}{0.92}{0.95}{\fontsize{6.5}{8.5}\selectfont
+    근거: fn-association-support before/after.json, portfolio-current-perception summary.json.\\
+    A는 mask·지면 처리 이후 기록 비교이며 최신 전체 처리의 개선율이 아님. GT 수는 누적 관측 수.}
+\end{tikzpicture}
+\end{frame}
+
+% 16. Physics reasoning summary
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader[21]{2-3. 구조물 안정성 물리 추론 AI 경진대회}
+  \place{0.007}{0.385}{0.985}{\fontsize{7.5}{10}\selectfont
+    \renewcommand{\arraystretch}{1.42}
+    \begin{tabularx}{\linewidth}{|>{\centering\arraybackslash}p{0.075\paperwidth}|X|}\hline
+      담당 역할 & 팀원 \\ \hline
+      주요 업무 &
+      \bulletline{Multi-View Bidirectional Cross Attention 모델 설계 및 적용해 기존 Feature Fusion 모델 대비 logloss 48.2\% 및 Accuracy 3.13\% 개선}
+      \bulletline{VideoMAE로 영상 특징 벡터 추출 및 Distillation Regularization 추가해 Baseline 대비 logloss 86.3\% 및 accuracy 9\% 개선}
+      \bulletline{Backbone, Epochs, Batch Size 등 HyperParameter Search 수행} \\ \hline
+      기술 스택 & SW : Python, PyTorch, Ubuntu 24.04\\
+      & GPU : DGX Spark \\ \hline
+    \end{tabularx}}
+\end{tikzpicture}
+\end{frame}
+
+% 17. Physics reasoning cross attention
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckbar
+  \place{0.01}{0.16}{0.97}{\fontsize{8}{10.5}\selectfont
+    1. \textbf{Multi-View Bidirectional Cross Attention} 모델 설계 및 적용\\[-1pt]
+    \bulletline{기존 Feature Fusion 모델 대비 \textbf{logloss 48.2\% 및 Accuracy 3.13\% 개선}}}
+  \place{0.045}{0.235}{0.94}{\cropimg{14}{65}{89}{19}{191}{0.94}}
+\end{tikzpicture}
+\end{frame}
+
+% 18. Physics reasoning distillation/search
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \canvas \deckheader[21]{2-3. 구조물 안정성 물리 추론 AI 경진대회}
+  \place{0.01}{0.16}{0.49}{\fontsize{6.6}{9}\selectfont
+    2. VideoMAE로 영상에서 특징 벡터 추출 및 Distillation Regularization 추가해 학습\\[-1pt]
+    \bulletline{Baseline 대비 \textbf{logloss 86.3\% 및 accuracy 9\% 개선}}}
+  \place{0.542}{0.16}{0.45}{\fontsize{6.6}{9}\selectfont
+    3. Backbone, Epochs, Batch Size 등 HyperParameter Search 수행\\[-1pt]
+    \bulletline{\textbf{Worst Trial 대비 logloss 95.5\% 및 accuracy 40\% 개선}}
+    ※ CosineAnnealingLR 스케줄러 사용, Epochs에 따라서도 수렴 속도가 달라짐}
+  \draw[line width=1.1pt] ([xshift=0.525\paperwidth,yshift=-0.235\paperheight]current page.north west)
+    -- ([xshift=0.525\paperwidth,yshift=-0.975\paperheight]current page.north west);
+  \place{0.075}{0.27}{0.375}{\cropimg{15}{110}{20}{795}{255}{0.375}}
+  \place{0.57}{0.31}{0.385}{\cropimg{15}{819}{20}{68}{285}{0.385}}
+\end{tikzpicture}
+\end{frame}
+
+\end{document}

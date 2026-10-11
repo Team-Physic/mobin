@@ -1,0 +1,202 @@
+{
+  "scope": "synthetic masks + analytic visibility + real ROS C++ node; no YOLO inference or Gazebo",
+  "versions": {
+    "ultralytics": "8.3.220",
+    "opencv": "4.11.0",
+    "numpy": "1.26.4"
+  },
+  "masks2segments_source": "def masks2segments(masks, strategy: str = \"all\"):\n    \"\"\"\n    Convert masks to segments using contour detection.\n\n    Args:\n        masks (torch.Tensor): Binary masks with shape (batch_size, 160, 160).\n        strategy (str): Segmentation strategy, either 'all' or 'largest'.\n\n    Returns:\n        (list): List of segment masks as float32 arrays.\n    \"\"\"\n    from ultralytics.data.converter import merge_multi_segment\n\n    segments = []\n    for x in masks.byte().cpu().numpy():\n        c = cv2.findContours(x, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]\n        if c:\n            if strategy == \"all\":  # merge and concatenate all segments\n                c = (\n                    np.concatenate(merge_multi_segment([x.reshape(-1, 2) for x in c]))\n                    if len(c) > 1\n                    else c[0].reshape(-1, 2)\n                )\n            elif strategy == \"largest\":  # select largest segment\n                c = np.array(c[np.array([len(x) for x in c]).argmax()]).reshape(-1, 2)\n        else:\n            c = np.zeros((0, 2))  # no segments found\n        segments.append(c.astype(\"float32\"))\n    return segments\n",
+  "mask_roundtrip": {
+    "rectangle": {
+      "original_pixels": 861,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 0
+    },
+    "hole": {
+      "original_pixels": 812,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 49
+    },
+    "split": {
+      "original_pixels": 310,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 10
+    }
+  },
+  "wall_ray_x_at_person_depth_m": [
+    0.468,
+    0.468,
+    0.48000000000000004,
+    0.48000000000000004,
+    0.49200000000000005,
+    0.49200000000000005
+  ],
+  "ros_cases": {
+    "person_only": {
+      "input_points": 9,
+      "observed_depth_m": 2.0,
+      "associated_points": 9,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 1,
+        "success": 1,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 0
+      }
+    },
+    "perfect_hole_excludes_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 2.0,
+      "associated_points": 8,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 2,
+        "success": 2,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 1
+      }
+    },
+    "polygon_baseline_accepts_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 1.0,
+      "associated_points": 60,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false,
+      "cumulative_diagnostics": {
+        "yolo_detections": 3,
+        "success": 3,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 2
+      }
+    },
+    "binary_mask_excludes_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 2.0,
+      "associated_points": 8,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 4,
+        "success": 4,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 3
+      }
+    },
+    "perfect_mask_accepts_hidden_wall_only": {
+      "input_points": 6,
+      "observed_depth_m": 5.0,
+      "associated_points": 6,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false,
+      "cumulative_diagnostics": {
+        "yolo_detections": 5,
+        "success": 5,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 3
+      }
+    },
+    "perfect_mask_mixed_person_and_wall": {
+      "input_points": 12,
+      "observed_depth_m": 2.0,
+      "associated_points": 9,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 6,
+        "success": 6,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 4
+      }
+    },
+    "same_pixel_wall_removed_partial_person_preserved": {
+      "input_points": 9,
+      "observed_depth_m": 2.0,
+      "associated_points": 3,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 7,
+        "success": 7,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 10
+      }
+    },
+    "adjacent_pixel_does_not_erase_partial_person": {
+      "input_points": 4,
+      "observed_depth_m": 5.0,
+      "associated_points": 3,
+      "person_surface_depth_m": 5.0,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 8,
+        "success": 8,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 10
+      }
+    },
+    "close_depths_preserved": {
+      "input_points": 3,
+      "observed_depth_m": 2.0299999713897705,
+      "associated_points": 3,
+      "person_surface_depth_m": 2.03,
+      "person_selected": true,
+      "cumulative_diagnostics": {
+        "yolo_detections": 9,
+        "success": 9,
+        "no_points": 0,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 10
+      }
+    },
+    "same_pixel_front_sample_blocks_far_points": {
+      "input_points": 4,
+      "observed_depth_m": null,
+      "associated_points": 0,
+      "person_surface_depth_m": 5.0,
+      "person_selected": false,
+      "cumulative_diagnostics": {
+        "yolo_detections": 10,
+        "success": 9,
+        "no_points": 1,
+        "multiple_depth_candidates": 0,
+        "ground_rejection": 0,
+        "tf_unavailable": 0,
+        "camera_occluded_points": 13
+      }
+    }
+  },
+  "binary_sha256": "c9f5233fe22fc4792a30d86f16a735e8b9cf9629ada192af15b04035228550b7",
+  "node_log": "[WARN] [1788771568.028779572] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.\n[WARN] [1788771568.028817705] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.\n[INFO] [1788771569.213520356] [rclcpp]: signal_handler(SIGINT/SIGTERM)\n",
+  "checks": "binary masks preserved; same-pixel occlusion filtered; neighbors and close depths preserved; wall-only failure remains"
+}

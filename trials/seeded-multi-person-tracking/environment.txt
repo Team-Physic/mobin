@@ -1,0 +1,9 @@
+trial=seeded-multi-person-tracking
+git_commit=73f81c44a4647291e39e1c415c2dbfc4c3d38fb4
+started_at=2026-09-04T14:53:17+09:00
+Linux swLinux 7.0.0-30-generic #30~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug  7 13:27:52 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+cpu=Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz
+memory=Mem:            15Gi       7.8Gi       2.9Gi       796Mi       5.8Gi       7.3Gi
+Docker version 29.1.3, build 29.1.3-0ubuntu3~24.04.2
+Docker Compose version 2.40.3+ds1-0ubuntu1~24.04.1
+NVIDIA GeForce GTX 1050, 580.173.02

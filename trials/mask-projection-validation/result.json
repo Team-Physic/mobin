@@ -1,0 +1,75 @@
+{
+  "scope": "synthetic masks + analytic visibility + real ROS C++ node; no YOLO inference or Gazebo",
+  "versions": {
+    "ultralytics": "8.3.220",
+    "opencv": "4.11.0",
+    "numpy": "1.26.4"
+  },
+  "masks2segments_source": "def masks2segments(masks, strategy: str = \"all\"):\n    \"\"\"\n    Convert masks to segments using contour detection.\n\n    Args:\n        masks (torch.Tensor): Binary masks with shape (batch_size, 160, 160).\n        strategy (str): Segmentation strategy, either 'all' or 'largest'.\n\n    Returns:\n        (list): List of segment masks as float32 arrays.\n    \"\"\"\n    from ultralytics.data.converter import merge_multi_segment\n\n    segments = []\n    for x in masks.byte().cpu().numpy():\n        c = cv2.findContours(x, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]\n        if c:\n            if strategy == \"all\":  # merge and concatenate all segments\n                c = (\n                    np.concatenate(merge_multi_segment([x.reshape(-1, 2) for x in c]))\n                    if len(c) > 1\n                    else c[0].reshape(-1, 2)\n                )\n            elif strategy == \"largest\":  # select largest segment\n                c = np.array(c[np.array([len(x) for x in c]).argmax()]).reshape(-1, 2)\n        else:\n            c = np.zeros((0, 2))  # no segments found\n        segments.append(c.astype(\"float32\"))\n    return segments\n",
+  "mask_roundtrip": {
+    "rectangle": {
+      "original_pixels": 861,
+      "added_pixels": 0,
+      "removed_pixels": 0
+    },
+    "hole": {
+      "original_pixels": 812,
+      "added_pixels": 49,
+      "removed_pixels": 0
+    },
+    "split": {
+      "original_pixels": 310,
+      "added_pixels": 10,
+      "removed_pixels": 0
+    }
+  },
+  "wall_ray_x_at_person_depth_m": [
+    0.468,
+    0.468,
+    0.48000000000000004,
+    0.48000000000000004,
+    0.49200000000000005,
+    0.49200000000000005
+  ],
+  "ros_cases": {
+    "person_only": {
+      "input_points": 9,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    },
+    "perfect_hole_excludes_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    },
+    "polygon_fills_hole_accepts_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 1.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false
+    },
+    "perfect_mask_accepts_hidden_wall_only": {
+      "input_points": 6,
+      "observed_depth_m": 5.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false
+    },
+    "perfect_mask_mixed_person_and_wall": {
+      "input_points": 12,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    }
+  },
+  "binary_sha256": "edb6e1f79aac01981c1ad76b35a0b955d53bc3415136ddb563b54a6a80e90a15",
+  "node_log": "[WARN] [1788768476.137563637] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.\n[WARN] [1788768476.137621447] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.\n[INFO] [1788768476.452740703] [rclcpp]: signal_handler(SIGINT/SIGTERM)\n",
+  "checks": "observed behavior reproduced; two semantic selection failures remain",
+  "source_sha256": {
+    "code/python/mobile_robot_lab_python/mobile_robot_lab_python/yolo_segmentation_detector_node.py": "03c8868d7e1c78e96eccb807e17c7a9066d725a9d44c2fa9875805cb4c26c539",
+    "code/cpp/mobile_robot_lab_cpp/src/lidar_bbox_association_node.cpp": "96b1be5b130545403c6554f146104b2731b6fe5dd982ef866b7d727b708765a4",
+    "code/cpp/mobile_robot_lab_cpp/include/mobile_robot_lab_cpp/camera_lidar_fusion.hpp": "c39573c50e069daf82a29e9f4f7d348cfa30012486c35b856a8de10615770e03",
+    "trials/mask-projection-validation/probe.py": "c2a2605a131c347f1bc967765a959681e1ebddbccfc2efdd464955fe25ea1758"
+  }
+}

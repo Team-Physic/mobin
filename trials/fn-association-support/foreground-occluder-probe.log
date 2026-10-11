@@ -1,0 +1,3 @@
+selected_depth_m=2 person_depth_m=5
+FAIL: foreground non-person accepted
+exit_code=1

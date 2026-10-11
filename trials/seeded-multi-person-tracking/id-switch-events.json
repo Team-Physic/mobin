@@ -1,0 +1,14 @@
+[
+  {
+    "timestamp": 37.0,
+    "ground_truth_id": "avoidance_person_3",
+    "previous_track_id": 1,
+    "new_track_id": 6
+  },
+  {
+    "timestamp": 52.5,
+    "ground_truth_id": "avoidance_person_3",
+    "previous_track_id": 6,
+    "new_track_id": 9
+  }
+]

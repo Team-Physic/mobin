@@ -1,0 +1,7 @@
+{
+  "timestamp_ns": 359800000000,
+  "annotation_different_pixels": 0,
+  "detection_3d_max_abs_error_m": 0.0,
+  "detection_count": 2,
+  "method": "same production fusion binary, exact-time saved raw image/mask/detection/cloud/CameraInfo and sampled TF, isolated domain88, all output topics remapped"
+}

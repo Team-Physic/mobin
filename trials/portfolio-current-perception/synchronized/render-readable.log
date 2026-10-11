@@ -1,0 +1,108 @@
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[WARN] [1788776775.265395748] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+[WARN] [1788776775.265462824] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+[rviz_common:debug] Load pixmap at package://rviz_common/images/splash_overlay.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Available Renderers(1): OpenGL Rendering Subsystem, at ./src/rviz_rendering/render_system.cpp:289
+[rviz_common:info] Stereo is NOT SUPPORTED, at ./src/rviz_rendering/render_system.cpp:531
+[rviz_common:info] OpenGl version: 4.5 (GLSL 4.5), at ./src/rviz_rendering/render_system.cpp:272
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/plus.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/minus.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:info] Stereo is NOT SUPPORTED, at ./src/rviz_rendering/render_system.cpp:531
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/TF.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/TF.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/TF.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/TF.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/classes/Identity.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_common/icons/classes/Identity.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_common/icons/classes/Identity.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/classes/Identity.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_common/icons/classes/Identity.png]: Couldn't open file /opt/ros/jazzy/share/rviz_common/icons/classes/Identity.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/default_class_icon.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/options.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/ok.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/warning.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/error.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Orbit.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Orbit.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Orbit.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Orbit.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Orbit.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Orbit.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/rotate.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/cursor.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/rotate_cam.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/move2d.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/move_z.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/zoom.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_common/icons/crosshair.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://nav2_rviz_plugins/icons/classes/CostmapCostTool.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/CostmapCostTool.svg]: Couldn't open file /opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/CostmapCostTool.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://nav2_rviz_plugins/icons/classes/CostmapCostTool.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/CostmapCostTool.png]: Couldn't open file /opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/CostmapCostTool.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://nav2_rviz_plugins/icons/classes/GoalTool.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/GoalTool.svg]: Couldn't open file /opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/GoalTool.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://nav2_rviz_plugins/icons/classes/GoalTool.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/GoalTool.png]: Couldn't open file /opt/ros/jazzy/share/nav2_rviz_plugins/icons/classes/GoalTool.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/FocusCamera.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Interact.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Interact.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Interact.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Interact.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Measure.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/MoveCamera.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/MoveCamera.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/MoveCamera.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/MoveCamera.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/PublishPoint.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Select.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Select.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Select.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Select.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/SetGoal.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/SetGoal.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/SetGoal.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/SetGoal.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/SetInitialPose.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/SetInitialPose.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/SetInitialPose.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/SetInitialPose.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Grid.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Grid.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Grid.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Grid.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/PointCloud2.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/PointCloud2.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/PointCloud2.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/PointCloud2.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/MarkerArray.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/MarkerArray.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/MarkerArray.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/MarkerArray.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Marker.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Marker.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Marker.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Marker.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/FlatColor.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/FlatColor.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/FlatColor.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/FlatColor.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/FlatColor.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/FlatColor.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/AxisColor.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/AxisColor.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/AxisColor.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/AxisColor.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/AxisColor.png][INFO] [1788776775.696131148] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788776775.697696101] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788776775.698163027] [rviz]: Subscribing to: /fusion/associated_points
+
+[INFO] [1788776775.706701765] [rviz]: Subscribing to: /fusion/non_ground_points
+
+[INFO] [1788776775.707296232] [rviz]: Subscribing to: /fusion/ground_points
+
+[INFO] [1788776775.708102597] [rviz]: Subscribing to: /fusion/associated_points
+
+: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/AxisColor.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/XYZ.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/XYZ.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/XYZ.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/XYZ.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/XYZ.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/XYZ.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/RGB8.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGB8.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGB8.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/RGB8.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGB8.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGB8.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/RGBF32.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGBF32.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGBF32.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/RGBF32.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGBF32.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/RGBF32.png, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Intensity.svg, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Intensity.svg]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Intensity.svg, at ./src/rviz_common/load_resource.cpp:55
+[rviz_common:debug] Load pixmap at package://rviz_default_plugins/icons/classes/Intensity.png, at ./src/rviz_common/load_resource.cpp:71
+[rviz_common:debug] Error retrieving file [file:///opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Intensity.png]: Couldn't open file /opt/ros/jazzy/share/rviz_default_plugins/icons/classes/Intensity.png, at ./src/rviz_common/load_resource.cpp:55
+readable track labels: 2

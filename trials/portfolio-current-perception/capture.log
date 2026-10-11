@@ -1,0 +1,12 @@
+[WARN] [1788773285.091767876] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+[WARN] [1788773285.091816236] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+saved frame-00 at 34.39s; detections=1; ['periodic_with_person_detection', 'partial_bbox']
+saved frame-01 at 39.57s; detections=1; ['periodic_with_person_detection']
+saved frame-02 at 44.58s; detections=1; ['periodic_with_person_detection']
+saved frame-03 at 49.60s; detections=2; ['periodic_with_person_detection']
+saved frame-04 at 54.71s; detections=1; ['periodic_with_person_detection']
+saved frame-05 at 59.80s; detections=1; ['periodic_with_person_detection']
+saved frame-06 at 64.91s; detections=1; ['periodic_with_person_detection']
+saved frame-07 at 69.99s; detections=1; ['periodic_with_person_detection']
+saved frame-08 at 75.01s; detections=1; ['periodic_with_person_detection']
+complete: 9 frame pairs, 289 track messages

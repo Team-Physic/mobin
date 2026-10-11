@@ -1,0 +1,28 @@
+{
+  "inference": [
+    {
+      "case": "people_odd_size",
+      "shape_hw": [
+        1001,
+        797
+      ],
+      "instances": 4,
+      "pixel_differences": 0
+    },
+    {
+      "case": "empty",
+      "shape_hw": [
+        479,
+        631
+      ],
+      "instances": 0,
+      "pixel_differences": 0
+    }
+  ],
+  "ultralytics": "8.3.220",
+  "source_sha256": {
+    "code/python/mobile_robot_lab_python/mobile_robot_lab_python/yolo_segmentation_detector_node.py": "093d4bdc1cb52405118ca848b3d209fbeeb996d6876f001152c54290766df89a",
+    "trials/mask-projection-validation/probe.py": "58ebd6d3c7c41db5dca0cee5f9be2e25c4e2bf5260104f049a518b884fb85f30",
+    "trials/mask-projection-validation/inference_check.py": "e4cf899c1c144ceaa5b1806c033d6f75b9cbf2bc2000a0a0eb71e9d56a5f7209"
+  }
+}

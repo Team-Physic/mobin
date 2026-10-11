@@ -1,0 +1,19 @@
+{
+  "frames": 674,
+  "gt_detections": 635,
+  "predicted_detections": 203,
+  "true_positives": 65,
+  "false_positives": 138,
+  "false_negatives": 570,
+  "id_switches": 8,
+  "mota": -0.12755905511811028,
+  "idf1": 0.05489260143198091,
+  "deta": 0.08408796895213454,
+  "assa": 0.026150031512862607,
+  "hota_at_0.75m": 0.046892462485467,
+  "association_status": {
+    "2": 727,
+    "0": 57,
+    "1": 12
+  }
+}

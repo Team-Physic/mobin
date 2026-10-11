@@ -1,0 +1,7 @@
+{
+  "code/cpp/mobile_robot_lab_cpp/include/mobile_robot_lab_cpp/camera_lidar_fusion.hpp": "50fcf717aac04f110368a14dc3b474d4269cdef8c11f3858e027de883375008e",
+  "code/cpp/mobile_robot_lab_cpp/src/lidar_bbox_association_node.cpp": "f71520cd07710cee2d90ac08b588c44a339149f0f46d9c2b0d610118eaf99fd1",
+  "code/cpp/mobile_robot_lab_cpp/test/camera_lidar_fusion_test.cpp": "4b55575c18e0e7906d4f1a5bee08d47fa5339a5ee1e97517cabb2a90d79b77bd",
+  "code/python/mobile_robot_lab_python/launch/yolo_lidar_fusion.launch.py": "57cb983678923d58ef1ee49aef41c0aa60fe07c9c5266d7869353e88457fcedc",
+  "trials/mask-projection-validation/probe.py": "ed9b61022c495fc471a7e0cd97cf1a68671a73bb10c12a5c42ceebfb33c2bed1"
+}

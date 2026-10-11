@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-07",
+  "pages": 18,
+  "changed_pages": [
+    10,
+    13,
+    14,
+    15
+  ],
+  "unchanged_frame_sources_verified": 14,
+  "visual_review": "Full-deck contact sheet and changed pages rendered, including final metric definitions on page 15.",
+  "checks": [
+    "Original PNG and evidence JSON copies byte-identical",
+    "TP+FN equals GT observations for all 3 rows",
+    "TN null; no Accuracy claim",
+    "Source and final PDF copies byte-identical",
+    "Precision/Recall formulas, ID Switch example, F1/IDF1 distinction visible"
+  ],
+  "files": {
+    "/home/swlinux/Desktop/workspace/ai-job-search/cv/ppt/presentation.tex": "77aa0cf880c8f37210ca99f09195b1cecfb8f47dcee348b36451f3852c8a84c4",
+    "/home/swlinux/Desktop/workspace/ai-job-search/cv/ppt/presentation_tex.pdf": "cf2715c07ec958796ed10831ad3659bc29fac6739e4fc46025e095cde5311577"
+  }
+}

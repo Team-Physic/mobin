@@ -1,0 +1,92 @@
+[
+  {
+    "timestamp": 6.6000000000000005,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 1,
+    "new_track_id": 2
+  },
+  {
+    "timestamp": 10.4,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 2,
+    "new_track_id": 3
+  },
+  {
+    "timestamp": 16.1,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 3,
+    "new_track_id": 5
+  },
+  {
+    "timestamp": 20.3,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 6,
+    "new_track_id": 7
+  },
+  {
+    "timestamp": 24.1,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 5,
+    "new_track_id": 9
+  },
+  {
+    "timestamp": 27.5,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 9,
+    "new_track_id": 10
+  },
+  {
+    "timestamp": 29.6,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 10,
+    "new_track_id": 11
+  },
+  {
+    "timestamp": 31.6,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 11,
+    "new_track_id": 12
+  },
+  {
+    "timestamp": 33.6,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 7,
+    "new_track_id": 13
+  },
+  {
+    "timestamp": 40.400000000000006,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 12,
+    "new_track_id": 14
+  },
+  {
+    "timestamp": 43.7,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 14,
+    "new_track_id": 15
+  },
+  {
+    "timestamp": 46.1,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 15,
+    "new_track_id": 16
+  },
+  {
+    "timestamp": 48.300000000000004,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 16,
+    "new_track_id": 17
+  },
+  {
+    "timestamp": 52.400000000000006,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 17,
+    "new_track_id": 19
+  },
+  {
+    "timestamp": 58.400000000000006,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 13,
+    "new_track_id": 20
+  }
+]

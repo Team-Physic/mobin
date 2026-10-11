@@ -1,0 +1,83 @@
+{
+  "scope": "synthetic masks + analytic visibility + real ROS C++ node; no YOLO inference or Gazebo",
+  "versions": {
+    "ultralytics": "8.3.220",
+    "opencv": "4.11.0",
+    "numpy": "1.26.4"
+  },
+  "masks2segments_source": "def masks2segments(masks, strategy: str = \"all\"):\n    \"\"\"\n    Convert masks to segments using contour detection.\n\n    Args:\n        masks (torch.Tensor): Binary masks with shape (batch_size, 160, 160).\n        strategy (str): Segmentation strategy, either 'all' or 'largest'.\n\n    Returns:\n        (list): List of segment masks as float32 arrays.\n    \"\"\"\n    from ultralytics.data.converter import merge_multi_segment\n\n    segments = []\n    for x in masks.byte().cpu().numpy():\n        c = cv2.findContours(x, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]\n        if c:\n            if strategy == \"all\":  # merge and concatenate all segments\n                c = (\n                    np.concatenate(merge_multi_segment([x.reshape(-1, 2) for x in c]))\n                    if len(c) > 1\n                    else c[0].reshape(-1, 2)\n                )\n            elif strategy == \"largest\":  # select largest segment\n                c = np.array(c[np.array([len(x) for x in c]).argmax()]).reshape(-1, 2)\n        else:\n            c = np.zeros((0, 2))  # no segments found\n        segments.append(c.astype(\"float32\"))\n    return segments\n",
+  "mask_roundtrip": {
+    "rectangle": {
+      "original_pixels": 861,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 0
+    },
+    "hole": {
+      "original_pixels": 812,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 49
+    },
+    "split": {
+      "original_pixels": 310,
+      "added_pixels": 0,
+      "removed_pixels": 0,
+      "previous_added_pixels": 10
+    }
+  },
+  "wall_ray_x_at_person_depth_m": [
+    0.468,
+    0.468,
+    0.48000000000000004,
+    0.48000000000000004,
+    0.49200000000000005,
+    0.49200000000000005
+  ],
+  "ros_cases": {
+    "person_only": {
+      "input_points": 9,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    },
+    "perfect_hole_excludes_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    },
+    "polygon_baseline_accepts_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 1.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false
+    },
+    "binary_mask_excludes_front_object": {
+      "input_points": 69,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    },
+    "perfect_mask_accepts_hidden_wall_only": {
+      "input_points": 6,
+      "observed_depth_m": 5.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": false
+    },
+    "perfect_mask_mixed_person_and_wall": {
+      "input_points": 12,
+      "observed_depth_m": 2.0,
+      "person_surface_depth_m": 2.0,
+      "person_selected": true
+    }
+  },
+  "binary_sha256": "edb6e1f79aac01981c1ad76b35a0b955d53bc3415136ddb563b54a6a80e90a15",
+  "node_log": "[WARN] [1788769155.355798403] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.\n[WARN] [1788769155.355878882] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.\n[INFO] [1788769155.667996540] [rclcpp]: signal_handler(SIGINT/SIGTERM)\n",
+  "checks": "mask conversion fixed; baseline failure reproduced; hidden-wall failure remains",
+  "source_sha256": {
+    "code/python/mobile_robot_lab_python/mobile_robot_lab_python/yolo_segmentation_detector_node.py": "093d4bdc1cb52405118ca848b3d209fbeeb996d6876f001152c54290766df89a",
+    "trials/mask-projection-validation/probe.py": "58ebd6d3c7c41db5dca0cee5f9be2e25c4e2bf5260104f049a518b884fb85f30",
+    "trials/mask-projection-validation/inference_check.py": "e4cf899c1c144ceaa5b1806c033d6f75b9cbf2bc2000a0a0eb71e9d56a5f7209"
+  }
+}

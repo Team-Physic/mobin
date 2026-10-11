@@ -1,0 +1,62 @@
+[
+  {
+    "timestamp": 8.9,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 1,
+    "new_track_id": 3
+  },
+  {
+    "timestamp": 9.200000000000001,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 2,
+    "new_track_id": 4
+  },
+  {
+    "timestamp": 10.0,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 4,
+    "new_track_id": 5
+  },
+  {
+    "timestamp": 16.2,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 5,
+    "new_track_id": 6
+  },
+  {
+    "timestamp": 17.400000000000002,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 6,
+    "new_track_id": 7
+  },
+  {
+    "timestamp": 24.3,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 7,
+    "new_track_id": 8
+  },
+  {
+    "timestamp": 38.5,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 8,
+    "new_track_id": 10
+  },
+  {
+    "timestamp": 42.400000000000006,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 10,
+    "new_track_id": 13
+  },
+  {
+    "timestamp": 48.6,
+    "ground_truth_id": "avoidance_person_1",
+    "previous_track_id": 13,
+    "new_track_id": 14
+  },
+  {
+    "timestamp": 50.800000000000004,
+    "ground_truth_id": "avoidance_person_2",
+    "previous_track_id": 3,
+    "new_track_id": 15
+  }
+]

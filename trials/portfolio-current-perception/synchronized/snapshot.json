@@ -1,0 +1,89 @@
+{
+  "timestamp_ns": 359800000000,
+  "confirmed_ids": [
+    98,
+    99
+  ],
+  "selection": "exact header timestamp equality across all 12 sensor/fusion/tracking topics; two confirmed tracks updated at this timestamp, distinct 3D observations within 0.75m",
+  "topics": [
+    {
+      "topic": "/camera/image_raw",
+      "type": "sensor_msgs/msg/Image",
+      "file": "00.cdr"
+    },
+    {
+      "topic": "/camera/detections_annotated",
+      "type": "sensor_msgs/msg/Image",
+      "file": "01.cdr"
+    },
+    {
+      "topic": "/segmentation/instance_labels",
+      "type": "sensor_msgs/msg/Image",
+      "file": "02.cdr"
+    },
+    {
+      "topic": "/detections",
+      "type": "vision_msgs/msg/Detection2DArray",
+      "file": "03.cdr"
+    },
+    {
+      "topic": "/calib/points",
+      "type": "sensor_msgs/msg/PointCloud2",
+      "file": "04.cdr"
+    },
+    {
+      "topic": "/fusion/detections_3d",
+      "type": "vision_msgs/msg/Detection3DArray",
+      "file": "05.cdr"
+    },
+    {
+      "topic": "/fusion/ground_points",
+      "type": "sensor_msgs/msg/PointCloud2",
+      "file": "06.cdr"
+    },
+    {
+      "topic": "/fusion/non_ground_points",
+      "type": "sensor_msgs/msg/PointCloud2",
+      "file": "07.cdr"
+    },
+    {
+      "topic": "/fusion/associated_points",
+      "type": "sensor_msgs/msg/PointCloud2",
+      "file": "08.cdr"
+    },
+    {
+      "topic": "/fusion/ground_plane",
+      "type": "visualization_msgs/msg/Marker",
+      "file": "09.cdr"
+    },
+    {
+      "topic": "/tracking/persons",
+      "type": "mobile_robot_lab_msgs/msg/TrackedPersonArray",
+      "file": "10.cdr"
+    },
+    {
+      "topic": "/tracking/markers",
+      "type": "visualization_msgs/msg/MarkerArray",
+      "file": "11.cdr"
+    },
+    {
+      "topic": "/camera/camera_info",
+      "type": "sensor_msgs/msg/CameraInfo",
+      "file": "12.cdr"
+    },
+    {
+      "topic": "/tf",
+      "type": "tf2_msgs/msg/TFMessage",
+      "file": "13.cdr"
+    },
+    {
+      "topic": "/clock",
+      "type": "rosgraph_msgs/msg/Clock",
+      "file": "14.cdr"
+    }
+  ],
+  "wall_wait_seconds": 139.70756461600104,
+  "tf": "odom <- each displayed sensor frame, looked up at selected timestamp; no timestamp rewriting",
+  "camera_info": "latest calibration, not a simultaneous exposure",
+  "limits": "selected example, not aggregate accuracy; annotation header follows detection timestamp; raw-image synchronizer pairing is checked separately"
+}

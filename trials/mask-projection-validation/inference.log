@@ -1,0 +1,23 @@
+{
+  "inference": [
+    {
+      "case": "people_odd_size",
+      "shape_hw": [
+        1001,
+        797
+      ],
+      "instances": 4,
+      "pixel_differences": 0
+    },
+    {
+      "case": "empty",
+      "shape_hw": [
+        479,
+        631
+      ],
+      "instances": 0,
+      "pixel_differences": 0
+    }
+  ],
+  "ultralytics": "8.3.220"
+}

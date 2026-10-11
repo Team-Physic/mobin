@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="850" viewBox="0 0 1400 850" role="img" aria-labelledby="title desc">
+<title id="title">레이저 왕복과 영상 투영</title>
+<desc id="desc">기존 3D 시각화의 정적 도식. LiDAR는 사람 옆으로 벽을 측정하고 반사광을 받는다. 카메라에서는 사람이 벽을 가리지만 벽의 3D 점은 사람 mask 안으로 투영될 수 있다. 실제 측정값이 아닌 개념도.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#bc5900"/></marker></defs>
+<rect width="1400" height="850" fill="white"/>
+<g font-family="Noto Sans CJK KR, sans-serif" fill="#17212b">
+<text x="60" y="68" font-size="34" font-weight="700">레이저 왕복과 영상 투영</text>
+<text x="60" y="106" font-size="19" fill="#586574">기존 3D 설명의 정적 도식 · 실측 거리·센서 배치가 아닌 개념도</text>
+<!-- 깊이 방향으로 펼친 사시도: C–사람–P는 같은 카메라 시선 위에 있다. -->
+<path d="M110 575L970 425L1260 575L400 725Z" fill="#f3f5f7" stroke="#dce1e6"/>
+<path d="M990 207L1210 317L1210 587L990 477Z" fill="#e8ecf0" stroke="#9ba7b4" stroke-width="2"/>
+<text x="1110" y="265" font-size="25">벽</text>
+<!-- 카메라 중심 (190,530), 벽 P (1100,410), 사람 (554,482). -->
+<path d="M190 530L1100 410" fill="none" stroke="#5c6b7c" stroke-width="3" stroke-dasharray="11 8"/>
+<path d="M285 440L345 470L345 590L285 560Z" fill="#d8e9ff" fill-opacity="0.65" stroke="#3374ac" stroke-width="2"/>
+<circle cx="315" cy="513.5" r="7" fill="#3374ac"/>
+<text x="235" y="399" font-size="22">가상 영상면</text>
+<text x="245" y="633" font-size="21" fill="#286191">같은 pixel</text>
+<path d="M310 604L315 526" stroke="#3374ac" fill="none"/>
+<rect x="134" y="508" width="56" height="44" rx="5" fill="#354a5c"/>
+<circle cx="190" cy="530" r="9" fill="#3374ac"/>
+<text x="107" y="485" font-size="23" font-weight="700">Camera</text>
+<g fill="#377db6" stroke="#24618f" stroke-width="2">
+<circle cx="554" cy="366" r="25"/>
+<rect x="525" y="400" width="58" height="119" rx="23"/>
+<path d="M525 417L502 491M583 417L606 491M539 509L532 584M569 509L576 584" fill="none" stroke="#377db6" stroke-width="19" stroke-linecap="round"/>
+</g>
+<text x="516" y="321" font-size="25" font-weight="700">사람</text>
+<path d="M190 530L1100 410" fill="none" stroke="#5c6b7c" stroke-width="3" stroke-dasharray="11 8"/>
+<text x="673" y="378" font-size="21" fill="#586574">점선: 영상 투영 계산</text>
+<path d="M420 674L1100 410" fill="none" stroke="#bc5900" stroke-width="4"/>
+<path d="M636 590L739 550" stroke="#bc5900" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M952 468L849 508" stroke="#bc5900" stroke-width="4" marker-end="url(#arrow)"/>
+<ellipse cx="420" cy="683" rx="25" ry="10" fill="#9b4b08"/>
+<path d="M395 657V683Q420 700 445 683V657" fill="#df8c3e" stroke="#9b4b08" stroke-width="2"/>
+<ellipse cx="420" cy="657" rx="25" ry="10" fill="#f3b577" stroke="#9b4b08" stroke-width="2"/>
+<text x="353" y="735" font-size="23" font-weight="700">LiDAR</text>
+<circle cx="1100" cy="410" r="9" fill="#bc5900"/>
+<text x="1119" y="413" font-size="23" font-weight="700">점 P</text>
+<text x="771" y="601" font-size="22" fill="#a94f00">실선: LiDAR ↔ 벽</text>
+<text x="771" y="634" font-size="19" fill="#a94f00">사람 옆을 통과한 빛이 벽에서 반사</text>
+<text x="60" y="788" font-size="23" font-weight="700">카메라에서 가려진 벽 점도 사람 mask 안으로 투영될 수 있습니다.</text>
+<text x="60" y="824" font-size="20">mask 안의 LiDAR 점이라는 조건만으로 사람 표면의 점임을 보장할 수 없습니다.</text>
+</g></svg>

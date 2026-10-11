@@ -1,0 +1,88 @@
+{
+  "packaged_utc": "2026-09-07T10:34:55.984152+00:00",
+  "git_head": "73f81c44a4647291e39e1c415c2dbfc4c3d38fb4",
+  "git_working_tree": "dirty; production hashes below",
+  "container": "mobin-portfolio-capture",
+  "container_image": "tb3-jazzy-lab:local",
+  "ros": "Jazzy",
+  "gazebo": "Harmonic",
+  "rviz_version": "14.1.22",
+  "gpu": "NVIDIA GeForce GTX 1050 / 4096 MiB",
+  "gpu_driver": "580.173.02",
+  "model": "yolo11s-seg.pt",
+  "model_sha256": "1caa81c0195412efa411b632bcfb8c184939dddb6ae41f6a80c41b211ff257c3",
+  "fusion_binary_sha256": "c9f5233fe22fc4792a30d86f16a735e8b9cf9629ada192af15b04035228550b7",
+  "scenario": {
+    "people": 3,
+    "seed": 42,
+    "robot_model": "waffle_pi_3d_large",
+    "robot_initial_world_pose": [
+      -2.0,
+      -0.5,
+      0.0
+    ],
+    "robot_motion_commanded": false,
+    "navigation": false,
+    "patrol": false,
+    "yolo_confidence": 0.25
+  },
+  "evaluation": {
+    "seconds": 60,
+    "camera_rate_hz": 30,
+    "lidar_rate_hz": 10,
+    "source": "summary.json",
+    "independent_run_not_paired_comparison": true
+  },
+  "synchronized_capture": {
+    "timestamp_ns": 359800000000,
+    "confirmed_track_ids": [
+      98,
+      99
+    ],
+    "camera_rate_hz": 10,
+    "lidar_rate_hz": 10,
+    "original_robot_sdf_sha256": "42dc3d1c020ff92f6cb1cb230cd7be4bed42656c77f72de2feb79212c182d93b",
+    "temporary_robot_sdf_sha256": "7e1d4b70951659e574c6fc67d2a4c5d2c48a1c6a3d251ee5c1c642e0cc2d7a4d",
+    "change": "Only camera update_rate 30 -> 10 Hz in temporary SDF; robot respawned at same commanded world pose to initialize both sensors together. Runtime rate change alone left an observed 8ms phase difference.",
+    "camera_source": "actual Gazebo robot camera Image; both people partly clipped by image borders",
+    "frozen_replay_domain": 88,
+    "live_domain": 87,
+    "display": "private Xvfb :98; no desktop GUI capture",
+    "renderer": "native RViz/OGRE; text showOnTop and space width 0.35 * character height; message values unchanged"
+  },
+  "production_source_sha256": {
+    "code/cpp/mobile_robot_lab_cpp/include/mobile_robot_lab_cpp/camera_lidar_fusion.hpp": "50fcf717aac04f110368a14dc3b474d4269cdef8c11f3858e027de883375008e",
+    "code/cpp/mobile_robot_lab_cpp/src/lidar_bbox_association_node.cpp": "f71520cd07710cee2d90ac08b588c44a339149f0f46d9c2b0d610118eaf99fd1",
+    "code/cpp/mobile_robot_lab_cpp/test/camera_lidar_fusion_test.cpp": "4b55575c18e0e7906d4f1a5bee08d47fa5339a5ee1e97517cabb2a90d79b77bd",
+    "code/python/mobile_robot_lab_python/launch/yolo_lidar_fusion.launch.py": "57cb983678923d58ef1ee49aef41c0aa60fe07c9c5266d7869353e88457fcedc",
+    "trials/mask-projection-validation/probe.py": "ed9b61022c495fc471a7e0cd97cf1a68671a73bb10c12a5c42ceebfb33c2bed1",
+    "code/python/mobile_robot_lab_python/mobile_robot_lab_python/yolo_segmentation_detector_node.py": "093d4bdc1cb52405118ca848b3d209fbeeb996d6876f001152c54290766df89a",
+    "code/cpp/mobile_robot_lab_cpp/include/mobile_robot_lab_cpp/ground_plane_filter.hpp": "ae3e1b1a4e81df7f10824fa74fd3deb5b130e4642fe01ebafa9a28bc8ec7fa89",
+    "code/cpp/mobile_robot_lab_cpp/include/mobile_robot_lab_cpp/constant_velocity_tracker.hpp": "b295b051aa95bc3a13a9a5eb14d39fc688a479f00e70f5f771b7b1bf882cf664",
+    "code/cpp/mobile_robot_lab_cpp/src/person_tracker_node.cpp": "6c120c796a6686f92082a464411f8596b3671765eda0adbd49ce079859cfef4c"
+  },
+  "artifact_sha256": {
+    "synchronized/00.cdr": "b5c7c3af8935678d4b584e3372fc0261b67c3e79c6fa4f6bafb0e879fa2cf51e",
+    "synchronized/01.cdr": "347e1b4b9a134b4df2d6183d91c9267ad3e478468c3775e3dad2c9673b6217f4",
+    "synchronized/02.cdr": "006768ab01bef4802d5868cd27951bf95f0981e0cbfdd7e18748f22aa943a735",
+    "synchronized/03.cdr": "e93c95aea046d52a47ec5bb67dbba0c939edeec1bd28ff1efaacda7edf616a39",
+    "synchronized/04.cdr": "9df5c8d3a2a5a26709eae080ab4177726421475fbdbd23d9bf04a4dfd08254d3",
+    "synchronized/05.cdr": "a674215183bf0423b79b7cc2b983d512154fee8da56ee8b4171267e1bb43f61b",
+    "synchronized/06.cdr": "679f5123f69749cb8fd6426e146dc8b36b5890c72a705bcb9780290b0f5ad769",
+    "synchronized/07.cdr": "e46e6f4956f3493989e969c7b64ca265d11e3ddef4e0eb413fbe9f1fe8168303",
+    "synchronized/08.cdr": "e92b011d97406b4de01c970935087aba03a268d2b0aefc4718443233caf944c4",
+    "synchronized/09.cdr": "0b5d093146bc0411b4206e3c9442e67140b3a3ff3abd8fd664f06d17ccebd156",
+    "synchronized/10.cdr": "1601eeb7534873abf6573d6b5e7c74f87cdf03b7efac38e9d0baceaa0c010061",
+    "synchronized/11.cdr": "9ba45fab154fc365dc005225473d2d49c7d566023afb93f4fc14a319106139f3",
+    "synchronized/12.cdr": "f93367942865c11e72c188ef59dff3a06b50958b6ef4a9f6d20c0893cebd75bc",
+    "synchronized/13.cdr": "7271f1fc6479b0bacd671c2c6e07627915e8c595e0b2eed9906d082b39fbff8c",
+    "synchronized/14.cdr": "17e1d12efd0361b9c9759f98fe6ecd85359298ec31a8ffef11047836508865b5",
+    "synchronized/association-replay-check.json": "8e1d0315d555669a2f18375581beaae42cb5525f6c3208b43c550770c8bf82cd",
+    "synchronized/camera-association.png": "391ebd98c9a2fea05f82d1fd296ce2e959b852a9d5ee485b7da6004baf96014f",
+    "synchronized/gazebo-camera.png": "c2a3129d61f62891b943bea0bc2bc20cfe7ba863fa5d7f354c6dff0c100ef693",
+    "synchronized/perception.rviz": "cec26d617764decc31cc5a9d294620f7644e194e4e5c6ab32b95408c6a95e11a",
+    "synchronized/rviz.png": "7df1740d745face4aa35b41a0c7ba78180116b250639bcdd841647fd2f8bed8c",
+    "synchronized/snapshot.json": "f85ce1eedb0d315c044ae907881d862b76dcc963387577f13b1a653533cf5de7"
+  },
+  "metrics_table_sha256": "04a87bf500e5711c913187e25c2e1379f9bb313edb55160b4fe7270a91eefde4"
+}

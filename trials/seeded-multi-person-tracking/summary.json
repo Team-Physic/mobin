@@ -1,0 +1,69 @@
+{
+  "assa": 0.0827296160629494,
+  "collision_count": 1,
+  "collision_distance": 0.65,
+  "deta": 0.05660377358490566,
+  "duration_seconds": 60.00000000000001,
+  "false_negatives": 130,
+  "false_positives": 20,
+  "frames": 135,
+  "gt_detections": 139,
+  "hota_at_0.75m": 0.06843104892074475,
+  "id_switches": 2,
+  "idf1": 0.05952380952380952,
+  "minimum_person_distance": 0.640341289797551,
+  "mota": -0.09352517985611519,
+  "patrol_completed": false,
+  "patrol_status": "not_started",
+  "predicted_detections": 29,
+  "roi_excluded_predictions": 9,
+  "roi_unavailable_frames": 0,
+  "safety_reason_counts": {
+    "person_cpa_danger": 27,
+    "safe": 169,
+    "scan_stale": 450,
+    "stable_safe_hold": 1421,
+    "tracking_stale_speed_limit": 597
+  },
+  "sensor_coverage": {
+    "__all__": {
+      "camera": 145,
+      "camera_ratio": 0.17386091127098321,
+      "common": 139,
+      "common_ratio": 0.16666666666666666,
+      "lidar": 587,
+      "lidar_ratio": 0.7038369304556354,
+      "samples": 834
+    },
+    "avoidance_person_1": {
+      "camera": 10,
+      "camera_ratio": 0.03597122302158273,
+      "common": 10,
+      "common_ratio": 0.03597122302158273,
+      "lidar": 110,
+      "lidar_ratio": 0.39568345323741005,
+      "samples": 278
+    },
+    "avoidance_person_2": {
+      "camera": 12,
+      "camera_ratio": 0.04316546762589928,
+      "common": 12,
+      "common_ratio": 0.04316546762589928,
+      "lidar": 255,
+      "lidar_ratio": 0.9172661870503597,
+      "samples": 278
+    },
+    "avoidance_person_3": {
+      "camera": 123,
+      "camera_ratio": 0.44244604316546765,
+      "common": 117,
+      "common_ratio": 0.420863309352518,
+      "lidar": 222,
+      "lidar_ratio": 0.7985611510791367,
+      "samples": 278
+    }
+  },
+  "timing_excluded_frames": 0,
+  "tracking_latency_p95_seconds": 0.23,
+  "true_positives": 9
+}
