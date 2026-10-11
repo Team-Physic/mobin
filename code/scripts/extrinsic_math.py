@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+# Calibration 추정 extrinsic을 simulation ground truth와 같은 방향으로 비교한다.
+# 입력은 calibration JSON과 ground-truth JSON이며 translation(m)·rotation(deg) 오차를 계산한다.
+# 오차가 0.05 m와 3도를 모두 넘지 않으면 성공하고, 선택적으로 metric JSON을 저장한다.
+# `--camera-joint` 사용 시 추정 extrinsic을 URDF camera_joint의 xyz·rpy 형태로 출력한다.
+
 import argparse
 import json
 import math

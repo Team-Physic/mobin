@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+# Calibration 전에 rosbag 디렉터리와 필수 Camera·LiDAR topic 구성을 검사한다.
+# 첫 번째 인자로 bag root를 받고, 생략하면 repository의 data/bags를 사용한다.
+# Calibration Docker image에서 각 metadata.yaml을 읽으며 원본 bag은 read-only로 mount한다.
+# 유효 bag이 5개 미만이거나 필수 topic/type이 하나라도 없으면 실패로 종료한다.
+# 주요 입력:
+# - `$1`: 검사할 bag root directory. 선택값, 기본값은 `<repository>/data/bags`다.
+# - `CALIB_IMAGE`: `ros2 bag info`를 실행할 Docker image. 기본값은 `direct-visual-lidar-calibration:fork`다.
+
 set -euo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)

@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+# 실행 중인 ROS 2 TF tree에서 LiDAR와 Camera의 simulation ground-truth transform을 읽는다.
+# 입력은 새 JSON 경로이며 base_link, base_scan, camera frame 사이 transform을 최대 10초 기다린다.
+# 결과는 calibration 추정값과 비교할 translation·quaternion JSON이고 기존 파일은 덮어쓰지 않는다.
+# Simulation과 robot_state_publisher가 먼저 실행되어 TF를 발행하고 있어야 한다.
+
 import argparse
 import json
 from pathlib import Path

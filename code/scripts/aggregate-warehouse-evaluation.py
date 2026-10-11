@@ -3,6 +3,11 @@
 # Copyright 2026 JungSeong
 # Licensed under the Apache License, Version 2.0
 
+# 여러 warehouse seed 실행이 만든 `seed-*.json` 평가값을 하나의 요약으로 집계한다.
+# 입력은 결과 디렉터리이며 충돌 수, 완주율, tracking 지표와 latency를 실행 전체에서 계산한다.
+# 결과는 지정 디렉터리의 `summary.json`과 표준 출력에 같은 JSON으로 기록한다.
+# 각 입력 JSON이 tracking evaluator의 metric schema와 단위를 따른다고 가정한다.
+
 import argparse
 import glob
 import json

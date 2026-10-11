@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Generate a uniformly scaled TurtleBot3 SDF and matching URDF."""
+"""기존 TurtleBot3 3D 모델을 3배 확대한 SDF·URDF 파생 모델로 생성한다.
+
+입력 경로와 배율은 이 파일의 상수이며 pose·geometry·mass·inertia를 물리 단위에 맞춰 변환한다.
+결과는 fork 내부의 large model, URDF, model.config와 복사된 bridge 설정이다.
+원본 모델은 유지하지만 같은 이름의 생성 결과는 덮어쓰므로 source 변경 후 재생성할 때만 실행한다.
+"""
 
 from pathlib import Path
 import shutil
