@@ -1,6 +1,10 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// Semantic safety core의 CPA 감속·정지, 방향별 LiDAR emergency와 stale 우선순위를 검증한다.
+// 합성 입력은 odom 평면의 meter·m/s와 second 시간이며 ROS node나 Gazebo를 실행하지 않는다.
+// Danger 해제 직후에는 stable-safe 시간이 끝날 때까지 zero command가 유지되어야 한다.
+
 #include <cassert>
 #include <cmath>
 
@@ -9,6 +13,11 @@
 int main()
 {
   using namespace mobile_robot_lab_cpp;
+
+  assert(command_is_stale(false, 0.0, 0.3));
+  assert(!command_is_stale(true, 0.3, 0.3));
+  assert(command_is_stale(true, 0.31, 0.3));
+
   const DirectionalRanges clear_ranges{2.0, 2.0, 2.0, 2.0};
   const VelocityCommand requested{0.4, 0.2};
   const RobotMotion2 robot{{0.0, 0.0}, {1.0, 0.0}};

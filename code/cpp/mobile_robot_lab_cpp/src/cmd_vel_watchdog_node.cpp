@@ -1,7 +1,13 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// Semantic safety의 `/cmd_vel_safe`를 robot 구동용 `/cmd_vel`로 전달하는 마지막 watchdog node다.
+// 최근 command 수신시각을 ROS clock으로 측정하고 기본 0.3초 동안 갱신되지 않으면 zero command를 낸다.
+// 출력은 20 Hz `TwistStamped`이며 frame_id는 robot body를 나타내는 `base_link`다.
+// Safety node가 종료되어도 이전의 비영속 속도 명령이 actuator에 남지 않게 하는 것이 목적이다.
+
 #include <chrono>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -9,6 +15,8 @@
 
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include "mobile_robot_lab_cpp/semantic_safety.hpp"
 
 using namespace std::chrono_literals;
 
@@ -40,7 +48,10 @@ public:
 private:
   void update()
   {
-    const bool stale = !last_receipt_ || (now() - *last_receipt_).seconds() > timeout_;
+    const double receipt_age = last_receipt_ ?
+      (now() - *last_receipt_).seconds() : std::numeric_limits<double>::infinity();
+    // 안전 node가 죽거나 command 갱신이 끊기면 이전 속도를 재사용하지 않고 즉시 0을 보낸다.
+    const bool stale = command_is_stale(last_receipt_.has_value(), receipt_age, timeout_);
     geometry_msgs::msg::TwistStamped output;
     output.header.stamp = now();
     output.header.frame_id = "base_link";

@@ -1,6 +1,11 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// `/cmd_vel_mux`, `/scan`, `/odom`, `/tracking/persons`를 safety core 입력으로 변환하는 ROS 2 node다.
+// Odom body velocity를 odom 평면으로 회전하고 20 Hz마다 CPA·LiDAR·stale 판정을 실행한다.
+// 최종 `/cmd_vel_safe`와 판정 근거 `/safety/state`, RViz용 `/safety/markers`를 발행한다.
+// 사람 position·velocity와 robot motion은 모두 odom 기준, 거리 meter와 시간 second를 사용한다.
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -87,8 +92,8 @@ private:
   SafetyConfig safety_config()
   {
     SafetyConfig config;
-    config.caution_ttc = declare_parameter("caution_ttc", 4.0);
-    config.danger_ttc = declare_parameter("danger_ttc", 2.0);
+    config.caution_t_cpa = declare_parameter("caution_t_cpa", 4.0);
+    config.danger_t_cpa = declare_parameter("danger_t_cpa", 2.0);
     config.prediction_horizon = declare_parameter("prediction_horizon", 6.0);
     config.caution_scale = declare_parameter("caution_scale", 0.5);
     config.robot_radius = declare_parameter("robot_radius", 0.30);
@@ -110,6 +115,7 @@ private:
   void on_scan(const sensor_msgs::msg::LaserScan::SharedPtr message)
   {
     DirectionalRanges ranges;
+    // Command 방향에 맞는 emergency 검사를 위해 scan을 전·후·좌·우 swept sector로 축약한다.
     for (std::size_t index = 0; index < message->ranges.size(); ++index) {
       const double distance = message->ranges[index];
       if (!std::isfinite(distance) || distance < message->range_min ||
@@ -172,11 +178,15 @@ private:
       command.linear = requested_->twist.linear.x;
       command.angular = requested_->twist.angular.z;
     }
+    // 판정과 diagnostic이 같은 순간의 age를 사용해야 그래프로 결과를 재현할 수 있다.
+    const double scan_age = receipt_age(scan_receipt_);
+    const double odom_age = receipt_age(odom_receipt_);
+    const double tracking_age = receipt_age(tracks_receipt_);
+    // 수신시각 기준 stale 여부와 최신 sensor 상태를 하나의 순수 safety decision에 전달한다.
     const auto result = policy_.evaluate(
       command, robot_, persons_, ranges_,
-      receipt_age(scan_receipt_) > scan_timeout_,
-      receipt_age(odom_receipt_) > odom_timeout_,
-      receipt_age(tracks_receipt_) > tracking_timeout_, now().seconds());
+      scan_age > scan_timeout_, odom_age > odom_timeout_,
+      tracking_age > tracking_timeout_, now().seconds());
 
     geometry_msgs::msg::TwistStamped output;
     output.header.stamp = now();
@@ -184,7 +194,7 @@ private:
     output.twist.linear.x = result.command.linear;
     output.twist.angular.z = result.command.angular;
     publisher_->publish(output);
-    publish_diagnostics(result);
+    publish_diagnostics(result, scan_age, odom_age, tracking_age);
     marker_publisher_->publish(markers(result));
   }
 
@@ -225,8 +235,8 @@ private:
     cpa.id = selected->id;
     cpa.type = visualization_msgs::msg::Marker::SPHERE;
     cpa.action = visualization_msgs::msg::Marker::ADD;
-    cpa.pose.position.x = selected->position.x + selected->velocity.x * result.selected_ttc;
-    cpa.pose.position.y = selected->position.y + selected->velocity.y * result.selected_ttc;
+    cpa.pose.position.x = selected->position.x + selected->velocity.x * result.selected_t_cpa;
+    cpa.pose.position.y = selected->position.y + selected->velocity.y * result.selected_t_cpa;
     cpa.pose.orientation.w = 1.0;
     cpa.scale.x = cpa.scale.y = cpa.scale.z = 0.16;
     cpa.color.r = cpa.color.a = 1.0F;
@@ -234,7 +244,9 @@ private:
     return output;
   }
 
-  void publish_diagnostics(const SafetyResult & result)
+  void publish_diagnostics(
+    const SafetyResult & result, const double scan_age,
+    const double odom_age, const double tracking_age)
   {
     diagnostic_msgs::msg::DiagnosticArray array;
     array.header.stamp = now();
@@ -258,9 +270,16 @@ private:
         status.values.push_back(item);
       };
     add("selected_track_id", result.selected_track_id);
-    add("t_cpa", result.selected_ttc);
+    add("t_cpa", result.selected_t_cpa);
     add("d_cpa", result.selected_distance);
     add("d_safe", result.selected_safe_distance);
+    add("danger_t_cpa", get_parameter("danger_t_cpa").as_double());
+    add("scan_age", scan_age);
+    add("odom_age", odom_age);
+    add("tracking_age", tracking_age);
+    add("scan_timeout", scan_timeout_);
+    add("odom_timeout", odom_timeout_);
+    add("tracking_timeout", tracking_timeout_);
     array.status.push_back(status);
     diagnostics_publisher_->publish(array);
   }

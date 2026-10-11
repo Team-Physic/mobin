@@ -5,8 +5,8 @@ semantic_safety:
     scan_topic: /scan
     odom_topic: /odom
     tracks_topic: /tracking/persons
-    caution_ttc: 4.0
-    danger_ttc: 2.0
+    caution_t_cpa: 4.0
+    danger_t_cpa: 2.0
     prediction_horizon: 6.0
     caution_scale: 0.5
     robot_radius: 0.30

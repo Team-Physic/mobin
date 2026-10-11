@@ -1,6 +1,11 @@
 // Copyright 2026 JungSeong
 // Licensed under the Apache License, Version 2.0
 
+// Robot과 추적된 사람의 odom 기준 위치·속도로 CPA 위험을 계산하는 ROS 비의존 safety core다.
+// 요청속도, 방향별 LiDAR 최소거리, 입력 stale 상태를 받아 통과·감속·정지 command를 반환한다.
+// 위치와 거리는 meter, 속도는 m/s, CPA horizon과 timestamp는 second 단위를 사용한다.
+// LiDAR emergency와 stale 정지가 CPA보다 우선하며 정지 후 연속 safe 시간 동안 출력을 유지한다.
+
 #ifndef MOBILE_ROBOT_LAB_CPP__SEMANTIC_SAFETY_HPP_
 #define MOBILE_ROBOT_LAB_CPP__SEMANTIC_SAFETY_HPP_
 
@@ -51,8 +56,8 @@ struct DirectionalRanges
 
 struct SafetyConfig
 {
-  double caution_ttc{4.0};
-  double danger_ttc{2.0};
+  double caution_t_cpa{4.0};
+  double danger_t_cpa{2.0};
   double prediction_horizon{6.0};
   double caution_scale{0.5};
   double robot_radius{0.30};
@@ -78,16 +83,23 @@ struct SafetyResult
   VelocityCommand command;
   SafetyMode mode{SafetyMode::kSafe};
   int selected_track_id{-1};
-  double selected_ttc{std::numeric_limits<double>::infinity()};
+  double selected_t_cpa{std::numeric_limits<double>::infinity()};
   double selected_distance{std::numeric_limits<double>::infinity()};
   double selected_safe_distance{0.0};
   std::string reason{"safe"};
 };
 
+inline bool command_is_stale(
+  const bool has_receipt, const double receipt_age, const double timeout)
+{
+  return !has_receipt || receipt_age > timeout;
+}
+
 inline ClosestApproach closest_approach(
   const RobotMotion2 & robot, const TrackedPerson2 & person,
   const double horizon)
 {
+  // 같은 odom frame에서 사람의 상태에서 robot 상태를 빼 상대 위치·속도를 만든다.
   const Vector2 relative_position{
     person.position.x - robot.position.x,
     person.position.y - robot.position.y};
@@ -98,6 +110,7 @@ inline ClosestApproach closest_approach(
     relative_velocity.y * relative_velocity.y;
   double time = 0.0;
   if (speed_squared > 1e-9) {
+    // 상대거리 제곱이 최소인 시점을 구하고 현재부터 예측 horizon 사이로 제한한다.
     time = std::clamp(
       -(relative_position.x * relative_velocity.x +
       relative_position.y * relative_velocity.y) / speed_squared,
@@ -141,8 +154,8 @@ public:
   explicit SemanticSafety(SafetyConfig config = {})
   : config_(config)
   {
-    const bool valid = config_.caution_ttc > config_.danger_ttc &&
-      config_.danger_ttc >= 0.0 && config_.prediction_horizon >= config_.caution_ttc &&
+    const bool valid = config_.caution_t_cpa > config_.danger_t_cpa &&
+      config_.danger_t_cpa >= 0.0 && config_.prediction_horizon >= config_.caution_t_cpa &&
       0.0 <= config_.caution_scale && config_.caution_scale <= 1.0 &&
       config_.robot_radius > 0.0 && config_.person_radius > 0.0 &&
       config_.safety_margin >= 0.0 && config_.front_emergency_distance > 0.0 &&
@@ -161,6 +174,7 @@ public:
   {
     SafetyResult result;
     result.command = requested;
+    // 위치나 거리 입력이 오래됐으면 의미 있는 CPA를 계산할 수 없으므로 다른 판단보다 먼저 정지한다.
     if (scan_stale || odom_stale) {
       return stop(result, SafetyMode::kInputStale, scan_stale ? "scan_stale" : "odom_stale", now);
     }
@@ -168,6 +182,7 @@ public:
       return stop(result, SafetyMode::kEmergency, "lidar_emergency", now);
     }
 
+    // 모든 사람의 CPA를 평가하고 가장 높은 위험단계, 같은 단계에서는 더 작은 score를 선택한다.
     SafetyMode risk_mode = SafetyMode::kSafe;
     double best_score = std::numeric_limits<double>::infinity();
     for (const auto & person : persons) {
@@ -177,15 +192,15 @@ public:
       if (cpa.distance > safe_distance) {
         continue;
       }
-      const SafetyMode mode = cpa.time <= config_.danger_ttc ?
+      const SafetyMode mode = cpa.time <= config_.danger_t_cpa ?
         SafetyMode::kDanger :
-        (cpa.time <= config_.caution_ttc ? SafetyMode::kCaution : SafetyMode::kSafe);
+        (cpa.time <= config_.caution_t_cpa ? SafetyMode::kCaution : SafetyMode::kSafe);
       const double score = cpa.time + cpa.distance / std::max(safe_distance, 1e-6);
       if (mode > risk_mode || (mode == risk_mode && score < best_score)) {
         risk_mode = mode;
         best_score = score;
         result.selected_track_id = person.id;
-        result.selected_ttc = cpa.time;
+        result.selected_t_cpa = cpa.time;
         result.selected_distance = cpa.distance;
         result.selected_safe_distance = safe_distance;
       }
@@ -204,6 +219,7 @@ public:
     }
 
     if (tracking_stale) {
+      // 사람 추적만 오래된 경우 LiDAR는 유효하므로 완전정지 대신 설정된 최고속도로 제한한다.
       const double magnitude = std::abs(result.command.linear);
       if (magnitude > config_.tracking_stale_speed && magnitude > 0.0) {
         const double scale = config_.tracking_stale_speed / magnitude;

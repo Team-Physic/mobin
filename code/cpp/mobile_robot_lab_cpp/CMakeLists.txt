@@ -48,6 +48,7 @@ ament_target_dependencies(
   nav_msgs rclcpp sensor_msgs visualization_msgs)
 
 add_executable(cmd_vel_watchdog_cpp src/cmd_vel_watchdog_node.cpp)
+target_include_directories(cmd_vel_watchdog_cpp PRIVATE include)
 ament_target_dependencies(cmd_vel_watchdog_cpp geometry_msgs rclcpp)
 
 install(TARGETS
